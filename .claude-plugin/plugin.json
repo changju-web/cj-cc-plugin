@@ -1,0 +1,10 @@
+{
+  "name": "cj-cc-plugin",
+  "description": "长聚科技关于ClaudeCode的插件库",
+  "version": "1.0.0",
+  "author": {
+    "name": "wangjiahui",
+    "email": "13226651554@163.com",
+    "url": "https://github.com/TurtleWXG"
+  }
+}
