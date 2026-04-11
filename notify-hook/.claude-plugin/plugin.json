@@ -1,0 +1,11 @@
+{
+  "name": "notify-hook",
+  "description": "Windows Toast 通知 hook，支持权限审批和空闲等待提醒，点击通知聚焦 Claude Code 窗口",
+  "version": "1.0.0",
+  "repository": "https://github.com/changju-web/cj-cc-marketplace",
+  "author": {
+    "name": "wangjiahui",
+    "email": "13226651554@163.com",
+    "url": "https://github.com/TurtleWXG"
+  }
+}

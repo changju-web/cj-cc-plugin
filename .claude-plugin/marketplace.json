@@ -8,6 +8,11 @@
       "name": "ep-comp",
       "source": "./ep-comp",
       "description": "基于 @gx-web/ep-comp 的业务代码生成插件"
+    },
+    {
+      "name": "notify-hook",
+      "source": "./notify-hook",
+      "description": "Windows Toast 通知 hook 插件"
     }
   ]
 }
