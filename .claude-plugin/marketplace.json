@@ -12,7 +12,7 @@
     {
       "name": "notify-hook",
       "source": "./notify-hook",
-      "description": "Windows Toast 通知 hook 插件"
+      "description": "Windows 任务栏闪烁通知 hook 插件"
     },
     {
       "name": "openspec-workflow",
