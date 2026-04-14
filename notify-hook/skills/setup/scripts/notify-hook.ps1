@@ -1,6 +1,6 @@
 # notify-hook.ps1 - Claude Code Notification hook entry point
-# Resolves the current host window (VS Code or standalone terminal)
-# and launches the background toast handler.
+# Flashes the taskbar button of the host window (VS Code or terminal)
+# when Claude Code needs user attention. No external dependencies needed.
 
 param(
     [string]$Message = '需要你的输入',
@@ -10,7 +10,6 @@ param(
 function Write-Log {
     param([string]$Msg)
     $logFile = Join-Path $env:TEMP 'claude-notify-debug.log'
-    # Truncate log if over 1MB
     if ((Test-Path $logFile) -and ((Get-Item $logFile).Length -gt 1MB)) {
         $lines = Get-Content $logFile -Tail 100
         $lines | Set-Content $logFile -ErrorAction SilentlyContinue
@@ -20,11 +19,24 @@ function Write-Log {
     Add-Content -Path $logFile -Value $line -ErrorAction SilentlyContinue
 }
 
-if (-not ('ConsoleHelper' -as [type])) {
+if (-not ('NotifyHelper' -as [type])) {
     Add-Type -TypeDefinition @"
 using System;
 using System.Runtime.InteropServices;
-public class ConsoleHelper {
+
+[StructLayout(LayoutKind.Sequential)]
+public struct FLASHWINFO {
+    public uint cbSize;
+    public IntPtr hwnd;
+    public uint dwFlags;
+    public uint uCount;
+    public uint dwTimeout;
+}
+
+public class NotifyHelper {
+    [DllImport("user32.dll")]
+    public static extern bool FlashWindowEx(ref FLASHWINFO pfwi);
+
     [DllImport("kernel32.dll")]
     public static extern IntPtr GetConsoleWindow();
 }
@@ -33,7 +45,7 @@ public class ConsoleHelper {
 
 Write-Log "Triggered: Message='$Message' Force=$Force PID=$PID"
 
-# Strategy 1: Process tree traversal (existing logic)
+# Strategy 1: Process tree traversal
 try { $proc = Get-Process -Id $PID -ErrorAction Stop } catch {
     Write-Log "  Get-Process self failed: $_"
     $proc = $null
@@ -61,7 +73,7 @@ while ($proc) {
 
 # Strategy 2: GetConsoleWindow fallback
 if ($targetHwnd -eq [IntPtr]::Zero) {
-    $consoleHwnd = [ConsoleHelper]::GetConsoleWindow()
+    $consoleHwnd = [NotifyHelper]::GetConsoleWindow()
     Write-Log "  GetConsoleWindow returned: $consoleHwnd"
     if ($consoleHwnd -ne [IntPtr]::Zero) {
         $targetHwnd = $consoleHwnd
@@ -76,10 +88,14 @@ if ($targetHwnd -eq [IntPtr]::Zero) {
 
 Write-Log "Found HWND=$($targetHwnd.ToInt64()) via $strategy"
 
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$toastScript = Join-Path $scriptDir 'notify-toast.ps1'
+# Flash taskbar button continuously until window comes to foreground
+# FLASHW_TRAY (2) | FLASHW_TIMERNOFG (12) = 14
+$fw = New-Object FLASHWINFO
+$fw.cbSize = [System.Runtime.InteropServices.Marshal]::SizeOf([FLASHWINFO])
+$fw.hwnd = $targetHwnd
+$fw.dwFlags = 14
+$fw.uCount = 0
+$fw.dwTimeout = 0
 
-$toastArgs = @('-NoProfile', '-File', $toastScript, '-Hwnd', $targetHwnd.ToInt64(), '-Message', $Message)
-if ($Force) { $toastArgs += '-Force' }
-
-Start-Process pwsh -ArgumentList $toastArgs -WindowStyle Hidden
+$result = [NotifyHelper]::FlashWindowEx([ref]$fw)
+Write-Log "FlashWindowEx result: $result"

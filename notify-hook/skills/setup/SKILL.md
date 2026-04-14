@@ -1,13 +1,13 @@
 ---
 name: setup
-description: 初始化 Windows Toast 通知 hook，复制脚本、注册 claude-focus:// 协议、写入 hooks 配置。用户执行 notify-hook:setup 时触发。
+description: 初始化任务栏闪烁通知 hook，复制脚本、写入 hooks 配置。用户执行 notify-hook:setup 时触发。
 ---
 
-# Setup - Windows Toast 通知 Hook
+# Setup - 任务栏闪烁通知 Hook
 
 ## Overview
 
-这个 skill 用于初始化 Windows Toast 通知系统。安装后，Claude Code 在需要权限审批或等待用户输入时，会弹出 Windows Toast 通知，用户点击通知可聚焦回 Claude Code 窗口。
+这个 skill 用于初始化任务栏闪烁通知系统。安装后，Claude Code 在需要权限审批或等待用户输入时，会闪烁 VS Code 的任务栏图标（橙色闪烁），提醒用户切换到对应窗口。无需第三方依赖。
 
 ## When to Use
 
@@ -47,24 +47,6 @@ pwsh.exe -Command '$PSVersionTable.PSVersion.ToString()'
 
 > 需要安装 PowerShell 7+，请访问 `https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-windows`
 
-### 3. BurntToast 模块检查
-
-运行：
-
-```powershell
-pwsh.exe -Command 'Get-Module -ListAvailable BurntToast | Select-Object -First 1 -ExpandProperty Version'
-```
-
-如果没有输出（模块未安装），提示用户：
-
-> 需要安装 BurntToast 模块。请运行以下命令后重新执行 setup：
->
-> ```powershell
-> pwsh.exe -Command 'Install-Module BurntToast -Scope CurrentUser -Force'
-> ```
-
-等待用户确认安装完成后再继续。
-
 ## Installation Steps
 
 前置检查通过后，按以下顺序执行安装。
@@ -80,48 +62,26 @@ if (-not (Test-Path $scriptsDir)) {
 
 ### Step 2: 复制脚本
 
-将插件目录中 `skills/setup/scripts/` 下的 3 个脚本复制到 `~/.claude/scripts/`。
+将插件目录中 `skills/setup/scripts/notify-hook.ps1` 复制到 `~/.claude/scripts/`。
 
-对于每个脚本文件，检查目标是否已存在且内容一致：
+检查目标是否已存在且内容一致：
 
 ```powershell
 $sourceDir = '<插件 skills/setup/scripts 目录的绝对路径>'
 $destDir = Join-Path $env:USERPROFILE '.claude\scripts'
-$scripts = @('notify-hook.ps1', 'notify-toast.ps1', 'focus-window.ps1')
+$src = Join-Path $sourceDir 'notify-hook.ps1'
+$dst = Join-Path $destDir 'notify-hook.ps1'
 
-foreach ($script in $scripts) {
-    $src = Join-Path $sourceDir $script
-    $dst = Join-Path $destDir $script
-
-    if ((Test-Path $dst) -and ((Get-FileHash $src).Hash -eq (Get-FileHash $dst).Hash)) {
-        # 跳过，内容一致
-    } else {
-        Copy-Item -Path $src -Destination $dst -Force
-    }
+if ((Test-Path $dst) -and ((Get-FileHash $src).Hash -eq (Get-FileHash $dst).Hash)) {
+    # 跳过，内容一致
+} else {
+    Copy-Item -Path $src -Destination $dst -Force
 }
 ```
 
-实际执行时，使用 Claude Code 的 Read 工具读取插件目录中每个脚本的内容，然后用 Write 工具写入 `~/.claude/scripts/` 对应文件。
+实际执行时，使用 Claude Code 的 Read 工具读取插件目录中脚本的内容，然后用 Write 工具写入 `~/.claude/scripts/notify-hook.ps1`。
 
-### Step 3: 注册 claude-focus:// 协议
-
-```powershell
-$focusScript = Join-Path $env:USERPROFILE '.claude\scripts\focus-window.ps1'
-
-New-Item -Path 'HKCU:\SOFTWARE\Classes\claude-focus' -Force | Out-Null
-Set-ItemProperty -Path 'HKCU:\SOFTWARE\Classes\claude-focus' -Name '(Default)' -Value 'URL:claude-focus Protocol'
-Set-ItemProperty -Path 'HKCU:\SOFTWARE\Classes\claude-focus' -Name 'URL Protocol' -Value ''
-New-Item -Path 'HKCU:\SOFTWARE\Classes\claude-focus\shell\open\command' -Force | Out-Null
-Set-ItemProperty -Path 'HKCU:\SOFTWARE\Classes\claude-focus\shell\open\command' -Name '(Default)' -Value "pwsh.exe -NoProfile -File `"$focusScript`" -Uri '%1'"
-```
-
-通过 Bash 工具执行以上 PowerShell 命令：
-
-```bash
-pwsh.exe -Command '上述 PowerShell 代码（单行转义）'
-```
-
-### Step 4: 写入 hooks 配置
+### Step 3: 写入 hooks 配置
 
 读取 `~/.claude/settings.json`，在 `hooks` 对象中写入 `Notification` 配置。
 
@@ -166,14 +126,13 @@ pwsh.exe -Command '上述 PowerShell 代码（单行转义）'
 
 **注意：** 不要破坏 settings.json 中已有的其他配置项。只修改 `hooks` 相关的部分。
 
-### Step 5: 完成提示
+### Step 4: 完成提示
 
 安装完成后，向用户输出：
 
 > notify-hook 安装完成！
 >
-> - 3 个脚本已复制到 ~/.claude/scripts/
-> - claude-focus:// 协议已注册
+> - 脚本已复制到 ~/.claude/scripts/notify-hook.ps1
 > - hooks 配置已写入 settings.json
 >
 > 请重启 Claude Code 使 hooks 生效。
@@ -184,9 +143,7 @@ pwsh.exe -Command '上述 PowerShell 代码（单行转义）'
 |------|----------|
 | 非 Windows 系统 | 终止安装，提示仅支持 Windows |
 | PowerShell 不可用 | 终止安装，提示安装 PowerShell |
-| BurntToast 未安装 | 提示安装命令，等待确认后继续 |
 | settings.json 解析失败 | 终止安装，提示手动检查配置文件 |
-| 协议已注册 | 跳过注册，不报错 |
 | hooks 已存在相同 matcher | 跳过该项，不重复添加 |
 | 脚本内容一致 | 跳过复制，提示已是最新 |
 
@@ -194,7 +151,7 @@ pwsh.exe -Command '上述 PowerShell 代码（单行转义）'
 
 当用户再次执行 `notify-hook:setup` 时：
 
-1. 检测 `~/.claude/scripts/` 中的脚本与插件目录中的脚本是否一致
+1. 检测 `~/.claude/scripts/notify-hook.ps1` 与插件目录中的脚本是否一致
 2. 如果不一致，提示用户有可用更新并询问是否覆盖
 3. 用户确认后覆盖更新
-4. hooks 和协议配置保持不变（幂等）
+4. hooks 配置保持不变（幂等）
