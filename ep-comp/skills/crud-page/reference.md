@@ -130,34 +130,27 @@ const [search, , resetSearch] = useStateRef(() => getModelFromJson(AlarmVO))
 
 ### useTemplateRef
 
-用于获取模板 ref。自定义组件场景可配合 `defineExpose` 使用。
+用于获取模板 ref，Vue 3.3+ 支持自动类型推导。
 
-**自定义组件示例：**
+**使用示例：**
 
 ```ts
 import { useTemplateRef } from 'vue'
-import type { ComponentExposed } from 'vue-component-type-helpers'
-import XxxAdd from './components/xxx-add.vue'
 
-const XxxAddRef = useTemplateRef<ComponentExposed<typeof XxxAdd>>('XxxAddRef')
+// 自定义组件 ref（自动推导类型）
+const XxxAddRef = useTemplateRef('XxxAddRef')
 XxxAddRef.value?.init()
-```
 
-**Element Plus 表单示例：**
-
-```ts
-import { useTemplateRef } from 'vue'
-import type { FormInstance } from 'element-plus'
-
-const FormRef = useTemplateRef<FormInstance>('FormRef')
+// Element Plus 表单 ref
+const FormRef = useTemplateRef('FormRef')
 await FormRef.value?.validate()
 ```
 
 **要点：**
 
-- 自定义组件 ref 名称需与模板 `ref="..."` 保持一致
-- 自定义组件暴露方法时，优先使用 `ComponentExposed<typeof XxxComp>` 获取类型
-- Element Plus 内置组件优先直接使用其实例类型，例如 `FormInstance`
+- Vue 3.3+ 自动从模板中的 ref 推导类型，无需泛型参数
+- ref 名称需与模板 `ref="..."` 保持一致
+- 类型推导基于组件的 `defineExpose` 或组件实例类型
 
 ### useToggle
 
@@ -621,7 +614,7 @@ export const removeById = (id: string) => {
 <!-- components/xxx-add.vue -->
 <script setup lang="ts">
 import { computed, reactive, useTemplateRef } from 'vue'
-import type { FormInstance, FormRules } from 'element-plus'
+import type { FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useStateRef, useToggle } from '@gx-web/tool'
 import { getModelFromJson } from '@gx-web/core'
@@ -658,7 +651,7 @@ const formItems = generateFormItems(XxxFormModel, [
   'field2'
 ])
 
-const FormRef = useTemplateRef<FormInstance>('FormRef')
+const FormRef = useTemplateRef('FormRef')
 
 /** 新增模式 */
 const init = () => {
@@ -730,7 +723,6 @@ defineExpose({ init, initEdit })
 <!-- index.vue -->
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, useTemplateRef } from 'vue'
-import type { ComponentExposed } from 'vue-component-type-helpers'
 import { ElMessage } from 'element-plus'
 import { useStateRef, useTablePage } from '@gx-web/tool'
 import { getModelFromJson } from '@gx-web/core'
@@ -744,7 +736,7 @@ defineOptions({
 
 const XxxAdd = defineAsyncComponent(() => import('./components/xxx-add.vue'))
 
-const XxxAddRef = useTemplateRef<ComponentExposed<typeof XxxAdd>>('XxxAddRef')
+const XxxAddRef = useTemplateRef('XxxAddRef')
 
 const [search, , resetSearch] = useStateRef(() => getModelFromJson(XxxQueryModel))
 

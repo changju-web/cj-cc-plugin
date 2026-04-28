@@ -453,8 +453,8 @@ render / slot 判断原则：
 - 单列展示定制：补 `#table-column-字段名` 或 `generateTableColumns.render`
 - 整表结构重写：用 `GxPaginationTable` 的 `#default`
 - 弹窗组件使用 `useTemplateRef` 获取组件 / 表单实例引用
-- 组件 ref：`useTemplateRef<ComponentExposed<typeof XxxAdd>>('XxxAddRef')`
-- 表单 ref：`useTemplateRef<FormInstance>('FormRef')`
+- 组件 ref：`useTemplateRef('XxxAddRef')`
+- 表单 ref：`useTemplateRef('FormRef')`
 - 弹窗的 `@submitted` 事件触发 `reloadList()`
 
 ### MANDATORY — 根节点结构

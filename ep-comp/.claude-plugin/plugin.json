@@ -1,7 +1,7 @@
 {
   "name": "ep-comp",
   "description": "基于 @gx-web/ep-comp 的业务代码生成插件",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "repository": "https://github.com/changju-web/cj-cc-marketplace",
   "author": {
     "name": "wangjiahui",

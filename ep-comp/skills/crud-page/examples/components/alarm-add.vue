@@ -55,7 +55,7 @@ const formItems = generateFormItems(AlarmFormModel, [
   }
 ])
 
-const FormRef = useTemplateRef<FormInstance>('FormRef')
+const FormRef = useTemplateRef('FormRef')
 
 /** 新增模式 */
 const init = () => {

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { defineAsyncComponent, h, onMounted, useTemplateRef } from 'vue'
-import type { ComponentExposed } from 'vue-component-type-helpers'
 import { ElButton, ElInput, ElMessage, ElPopconfirm, ElTag, ElTable, ElTableColumn } from 'element-plus'
 import { useStateRef, useTablePage } from '@gx-web/tool'
 import { getModelFromJson } from '@gx-web/core'
@@ -14,7 +13,7 @@ defineOptions({
 
 const AlarmAdd = defineAsyncComponent(() => import('./components/alarm-add.vue'))
 
-const AlarmAddRef = useTemplateRef<ComponentExposed<typeof AlarmAdd>>('AlarmAddRef')
+const AlarmAddRef = useTemplateRef('AlarmAddRef')
 
 const [search, , resetSearch] = useStateRef(() => getModelFromJson(AlarmQueryModel))
 
