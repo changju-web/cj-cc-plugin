@@ -10,6 +10,11 @@
       "description": "基于 @gx-web/ep-comp 的业务代码生成插件"
     },
     {
+      "name": "wd-comp",
+      "source": "./wd-comp",
+      "description": "基于 mini-program、Wot UI、@gx-web/core 和 @gx-web/tool 的业务代码生成插件"
+    },
+    {
       "name": "notify-hook",
       "source": "./notify-hook",
       "description": "Windows 任务栏闪烁通知 hook 插件"

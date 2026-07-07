@@ -7,6 +7,7 @@
 | 插件 | 说明 |
 |------|------|
 | ep-comp | 基于 @gx-web/ep-comp 的业务代码生成插件 |
+| wd-comp | 基于 mini-program、Wot UI、@gx-web/core 和 @gx-web/tool 的业务代码生成插件 |
 
 ## 安装
 
