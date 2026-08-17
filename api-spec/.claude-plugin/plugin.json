@@ -1,0 +1,11 @@
+{
+  "name": "api-spec",
+  "description": "OpenAPI 切片基础设施插件：spec-init 一键初始化 api-spec 目录 + 注入 AGENTS.md 识别纪律，spec-pull 引导网关拉取/重切片",
+  "version": "0.1.0",
+  "repository": "https://github.com/changju-web/cj-cc-marketplace",
+  "author": {
+    "name": "wangjiahui",
+    "email": "13226651554@163.com",
+    "url": "https://github.com/TurtleWXG"
+  }
+}

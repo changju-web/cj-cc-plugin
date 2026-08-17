@@ -28,6 +28,11 @@
       "name": "cj-mcp",
       "source": "./mcp",
       "description": "共享 MCP 服务器配置（tavily / github / chrome-devtools / context7 / codegraph）"
+    },
+    {
+      "name": "api-spec",
+      "source": "./api-spec",
+      "description": "OpenAPI 切片基础设施插件：spec-init 一键初始化 + spec-pull 拉取重切片引导，agent 按需 Read 切片识别接口"
     }
   ]
 }

@@ -31,6 +31,14 @@ ssd-workflow/                 — Spec-Driven Development 工作流编排插件�
     ssd-plan/                 — 阶段 2 HOW：→ superpowers:writing-plans
     ssd-apply/                — 阶段 3 执行：按 plan 实现 + 执行纪律路由
     ssd-archive/              — 阶段 4 归档：→ /opsx:archive
+api-spec/                     — OpenAPI 切片基础设施插件（源：by-investment-platform-frontend）
+  scripts/                     — 插件级共享脚本，init 时复制进目标项目 api-spec/scripts/
+    fetch-spec.mjs            — 网关拉取：config.json + env 自动探测（monorepo 扫 apps/*，单仓扫根目录）
+    gen-spec.mjs              — 切片：tag 派生 schema 分组（不写死业务前缀）+ config 噪音前缀追加
+  skills/
+    spec-init/                 — 一次性初始化：搭目录 → 复制脚本 → 注入 scripts → 写 AGENTS.md 纪律段
+      assets/                  — 模板资产（agents-discipline.md / README.md，占位符替换后落地）
+    spec-pull/                 — 后端更新后拉取/重切片引导（缺 api-spec/ 时路由回 spec-init）
 mcp/                          — 共享 MCP 服务器配置（未注册到 marketplace）
   .mcp.json                   — tavily / github / chrome-devtools / context7 / codegraph
 docs/
@@ -66,7 +74,7 @@ monorepo API 变更时，需要同步更新对应 skill 的 `reference.md`。
 1. 在 `<plugin>/skills/` 下创建以 skill 名称命名的目录（`kebab-case`）
 2. 必须包含 `SKILL.md`（frontmatter 含 `name` 和 `description`）
 3. 如果依赖外部库 API，在同级创建 `reference.md` 并在 `SKILL.md` 中引用
-4. 提供至少一组 `examples/`
+4. 提供至少一组 `examples/`；基础设施装配类 skill（无代码生成输出）不适用 examples/，模板资产放 `assets/`（占位符替换后落地）
 
 ## AGENTS.md
 
