@@ -62,3 +62,17 @@ monorepo API 变更时，需要同步更新对应 skill 的 `reference.md`。
 2. 必须包含 `SKILL.md`（frontmatter 含 `name` 和 `description`）
 3. 如果依赖外部库 API，在同级创建 `reference.md` 并在 `SKILL.md` 中引用
 4. 提供至少一组 `examples/`
+
+## Agent skills
+
+### Issue tracker
+
+工单以本地 markdown 文件存放在 `.scratch/<feature>/` 下，详见 `docs/agents/issue-tracker.md`。
+
+### Triage labels
+
+沿用默认五个 triage 标签（needs-triage / needs-info / ready-for-agent / ready-for-human / wontfix），详见 `docs/agents/triage-labels.md`。
+
+### Domain docs
+
+单上下文布局：根目录 `CONTEXT.md` + `docs/adr/`（懒创建），详见 `docs/agents/domain.md`。

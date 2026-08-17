@@ -71,3 +71,17 @@ monorepo API 变更时，需要同步更新对应 skill 的 `reference.md`。
 ## AGENTS.md
 
 `AGENTS.md` 是 Codex 版本的入口文件，结构与 CLAUDE.md 镜像，定位改为"Codex 插件 Marketplace"。新增插件或 skill 时需同步维护。
+
+## Agent skills
+
+### Issue tracker
+
+工单以本地 markdown 文件存放在 `.scratch/<feature>/` 下，详见 `docs/agents/issue-tracker.md`。
+
+### Triage labels
+
+沿用默认五个 triage 标签（needs-triage / needs-info / ready-for-agent / ready-for-human / wontfix），详见 `docs/agents/triage-labels.md`。
+
+### Domain docs
+
+单上下文布局：根目录 `CONTEXT.md` + `docs/adr/`（懒创建），详见 `docs/agents/domain.md`。
