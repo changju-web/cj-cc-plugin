@@ -22,16 +22,17 @@ spec-to-model 刚生成：EnterpriseInfoTableModel（来自 simplePage 的 recor
 
 先按接口形态锁定候选角色，再用字段覆盖率打分。
 
-**第一步：角色锁定**（形态判定与 spec-to-model 的形态 A/B/C/D 同源）：
+**第一步：角色锁定**（形态判定与 spec-to-model 的形态 A/B/C/D 同源；**分页响应优先于 body 驱动**——POST/PUT 且响应 data 含 records 时，requestBody 是查询条件不是表单）：
 
 | schema 来源 | 锁定角色（class 后缀，按项目约定） |
 |---|---|
-| 分页 query 业务对象 | `*SearchModel` |
-| GET list 的 query 对象 | `*SearchModel`（或 `*Model`，按项目约定探测） |
-| requestBody 业务对象 | `*FormModel`（含 `*ReviewFormModel` 等操作变体） |
-| 分页 records 项 | `*TableModel`（或基础 `*Model`） |
-| 响应 data 对象 | `*Model` / `*DetailModel` |
+| 分页响应 + requestBody 业务对象 | `*SearchModel`（或项目约定的查询载体，如 Entity 全量——xbwisdom 后端用全量实体作查询条件，指纹常命中 Entity） |
+| 分页响应 + query 业务对象 / GET list 的 query 对象 | `*SearchModel`（或 `*Model`，按项目约定探测） |
+| 非分页的 requestBody（新增/编辑/审核提交） | `*FormModel`（含 `*ReviewFormModel` 等操作变体） |
+| 分页 records 项 | `*TableModel`（或基础 `*Entity`/`*Model`，按项目约定） |
+| 响应 data 对象 | `*Model` / `*Entity` / `*DetailModel` |
 | 响应 data 基本类型 | 无需匹配（`Res<boolean>` 等） |
+| spec 零定义的分页查询（组合 D） | 不匹配，直接 `PageQuery<AnyObject>` 弱类型（见 request-shaping.md 形态 9） |
 
 **第二步：字段覆盖率打分**：
 

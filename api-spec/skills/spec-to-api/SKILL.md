@@ -67,16 +67,24 @@ description: 从 api-spec 切片生成项目约定的 api 封装（share 层工�
 
 通用规则（跨项目一致的部分）：
 
-- **query 参数一律 `params` 对象**，不生成 `` `${URL}/xxx?id=${id}` `` 模板字符串拼接（存量代码两种风格并存是历史欠债，新生成统一 params）
-- **`in: query` 的参数进 `params`，requestBody 进 `data`**——spec 侧天然分离，直接映射
-- **GET 分页**（query 业务对象 + sqlPageParams）：入参签名 `PageQuery<XxxSearchModel>`，发起时 `params: { ...params }` 平铺
-- **POST 分页**（query sqlPageParams + requestBody）：拆解——`pageNum`/`pageSize` 进 `params`，业务字段进 `data`（结构从 spec 推导，见 `getEnterpriseApplyPage` 模式）
+- **映射唯一依据参数位置**：`in: query` → `params`、`requestBody` → `data`、`in: path` → 拼 url，不猜后端兼容行为
+- **query 参数平铺合并**：多个 `in: query` 对象型参数（业务查询 + sqlPageParams）合并进**同一个 params**，绝不保留对象名嵌套（`params: { query: {...} }` 会序列化成 `query[field]=x`，Spring 绑定失败）
+- **淘汰模板字符串拼 query**：`` `${URL}/xxx?id=${id}` `` 是存量坏风格，新生成一律 `params: { id }`（透传已序列化 query 串的特例除外）
 - **DELETE 批量 id**：后端 Spring 需要 `id=1&id=2` 重复 key 格式，axios 数组序列化不符合 → 用项目批量工具拼接（如 `groupBatchIds`），`url: `${URL}?${groupBatchIds(ids as string[], 'id')}``
 - **响应壳**：`data` 含 `records` → `ResPage<T>`；`data` 是数组 → `Res<T[]>`；对象 → `Res<T>`；基本类型 → `Res<boolean>` / `Res<string>`
 
+分页查询的 **4 种 spec 组合**（判定顺序 C → A → B → D）：
+
+| 组合 | spec 特征 | 生成结构 |
+|---|---|---|
+| **A 拆解式** | `in:query` sqlPageParams + requestBody 业务 | `pageNum`/`pageSize` 进 params，业务进 data（方法体解构） |
+| **B 双 query 合并** | 两个 `in:query` 对象 | `PageQuery<SearchModel>` 平铺 `params: { ...params }` 一个对象 |
+| **C 嵌套 DTO 包装** | body 是 `{ page, queryParams }`（Page 全展开） | 重组嵌套：`page: { current: pageNum, size: pageSize }, queryParams`；Page 噪音字段零生成；`queryParams` 空洞 → `AnyObject` 弱类型 |
+| **D spec 零定义** | 响应分页但查询参数没定义 | `PageQuery<AnyObject>` 弱类型 + 报告缺口，不编造查询字段 |
+
 **不编造原则（硬规则）**：`pageOrder: 'update_time desc'`、`countTotal: true` 这类分页辅助默认值在 spec 里只有字段定义、没有业务取值语义——**不生成**，留人工补。生成的方法体只含 spec 能推导的结构。存量方法里已有的手写默认值，增量合并时原样保留。
 
-详细形态表与各形态模板：见 `references/request-shaping.md`。
+各形态方法体模板与真机对照：见 `references/request-shaping.md`。
 
 ## 类型回链（schema → model class）
 
@@ -143,7 +151,7 @@ export default EnterpriseInfoApi
 - **方法名零 operationId 依赖**：全部来自尾段或动词映射表；RESTful 端点（`/{id}`、空尾段）正确映射 byId/insert/update/delete
 - **每个方法有 JSDoc 注释**（summary 全文）
 - **query 全部 `params` 对象**，无模板字符串拼接 query
-- **POST 分页拆解正确**：sqlPageParams 对应的 pageNum/pageSize 进 params，requestBody 进 data
+- **分页 4 组合判定正确**：A 拆解式（分页进 params、业务进 data）/ B 双 query 平铺合并为一个 params（无对象名嵌套）/ C 嵌套 DTO 重组（`pageNum→page.current`、`pageSize→page.size`，Page 噪音零生成，`queryParams` 空洞用 `AnyObject`）/ D 零定义弱类型 + 缺口报告
 - **类型全部回链 model**：无凭空内联（内联仅出现在用户明确跳过 spec-to-model 的缺口上，且类型映射对齐 model 约定）
 - **没有编造 spec 外默认值**：无 pageOrder/countTotal/sort 取值
 - **三层保旧**：已存在方法整方法不动、import 不重排、spec 已删接口只报告不删

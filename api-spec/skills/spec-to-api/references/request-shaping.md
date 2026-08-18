@@ -2,20 +2,61 @@
 
 `SKILL.md`「请求形态」的关键补充。解决"每个 operation 的方法体怎么写——参数进 params 还是 data、分页怎么拆、批量删除怎么拼、响应类型怎么判"。
 
-## 总规则：spec 结构直接映射 axios config
+## 总规则：参数位置精确映射 axios config
 
-OpenAPI 的参数位置与 axios 的配置项天然对应：
+OpenAPI 的参数位置与 axios 的配置项天然对应，**映射的唯一依据是 `in` / `requestBody`，不猜后端兼容行为**：
 
 | OpenAPI | axios | 说明 |
 |---|---|---|
-| `parameters[].in === 'query'` | `params: { ... }` | **一律 params 对象** |
+| `parameters[].in === 'query'` | `params: { ... }` | **所有 query 参数平铺合并进同一个 params 对象** |
 | `requestBody.content['application/json']` | `data: { ... }` | |
 | `parameters[].in === 'path'`（`{id}`） | 拼进 `url` | RESTful 路径参数 |
 | HTTP method | `method` | 小写字符串原样（`'get'`/`'post'`/`'put'`/`'delete'`） |
 
+**query 平铺合并（关键规则）**：spec 里多个 `in: query` 的对象型参数（如业务查询对象 + sqlPageParams），Spring 侧的 query 绑定是**平铺的** `?field1=x&field2=y`——生成时必须合并展开成一个 params 对象，**绝不保留对象名嵌套**（`params: { query: {...}, sqlPageParams: {...} }` 会序列化成 `query[field1]=x`，后端绑定失败）。入参签名 `PageQuery<SearchModel>` 本身就是平铺形态（`{ pageNum, pageSize, ...T }`），`params: { ...params }` 一把展开即天然正确。
+
 **淘汰存量坏风格**：`` url: `${URL}/getEnterpriseInfo?id=${id}` `` 模板字符串拼 query——新生成一律 `params: { id }`。存量已有不重写（三层保旧）。
 
-## 7 种方法形态（含模板）
+## 分页查询的 4 种 spec 组合 → 生成结构
+
+「业务查询条件 + 分页参数」在 spec 里的组合方式有 4 种（真机统计 by-investment + xbwisdom 全库），生成结构各不相同：
+
+| 组合 | spec 特征 | 生成结构 | 真机示例 |
+|---|---|---|---|
+| **A 拆解式** | `in:query` sqlPageParams + requestBody 业务 | pageNum/pageSize 进 params，业务进 data（形态 6） | `/enterprise/product/page` [post] |
+| **B 双 query 合并** | 两个 `in:query` 对象（业务 + sqlPageParams） | 平铺合并一个 params（形态 4） | `/enterprise/promotional/material/page` [get] |
+| **C 嵌套 DTO 包装** | requestBody 是 `{ page: {...}, queryParams: {...} }` | 重组嵌套对象（形态 8） | `/module-wechat/visitInfo/list` [post] |
+| **D spec 零定义** | 响应是分页但查询参数完全没定义 | `PageQuery<AnyObject>` 弱类型 + 报告缺口 | `/system/{version}/user/page` [get] |
+
+判定顺序：**C → A → B → D**（C 的特征最独特——body 含 `page` 且子字段含 `current`/`size`；A 与 B 的区分就在业务条件在 requestBody 还是 query；都不满足落 D）。
+
+### 组合 A 真机对照（拆解式）
+
+```text
+POST /investment/enterprise/product/page
+  parameters:
+    in=query  sqlPageParams → SqlPageParams（pageNum/pageSize/pageOrder/countTotal/sort/allowedSortFields）
+  requestBody → EnterpriseProductQuery（classify/enterpriseId/name/parkId/releaseStatus/...）
+
+spec 位置映射：sqlPageParams 在 query → params；EnterpriseProductQuery 在 body → data
+```
+
+⚠️ by-investment 存量手写此接口是 `data: params`（整个 PageQuery 进 body，仅 pageOrder 进 query）——与 spec 结构漂移（pageNum/pageSize 实际没到达 query 的 sqlPageParams 位）。增量场景保旧不动，报告标注偏差；新生成按 spec 拆解。
+
+### 组合 B 真机对照（双 query 合并）
+
+```text
+GET /investment/enterprise/promotional/material/page
+  parameters:
+    in=query  query          → EnterprisePromotionalMaterialQuery（fileName/enterpriseId/fileExt/...16 字段）
+    in=query  sqlPageParams  → SqlPageParams（pageNum/pageSize/pageOrder/...6 字段）
+
+两个 query 对象平铺合并 → 一个 params：
+  params: { ...params }        ← PageQuery<SearchModel> = { pageNum, pageSize, ...业务字段 } 天然平铺
+✗ 反例（绝不生成）：params: { query: {...}, sqlPageParams: {...} }  ← 嵌套保留对象名，Spring 绑定失败
+```
+
+## 9 种方法形态（含模板）
 
 ### 形态 1：GET 无参
 
@@ -58,9 +99,9 @@ byId: (id: EnterpriseApplyFormModel['id']) =>
 
 spec `parameters[].in === 'path'` → 模板插值进 url，**不进 params**。
 
-### 形态 4：GET 查询对象 / GET 分页
+### 形态 4：GET 查询对象 / GET 分页（组合 B：双 query 合并）
 
-spec 特征：query 参数里有业务查询对象 schema（+ 可能的 sqlPageParams）。
+spec 特征：query 参数里有业务查询对象 schema（+ sqlPageParams），即「分页的 4 种组合」的 **组合 B**。
 
 ```ts
 /** 简单分页查询企业管理-企业信息列表 */
@@ -90,9 +131,9 @@ saveEnterpriseApply: (data: EnterpriseApplyFormModel) =>
   }),
 ```
 
-### 形态 6：POST 分页拆解（query 分页参数 + body 业务条件）
+### 形态 6：POST/PUT 分页拆解（组合 A：query 分页 + body 业务）
 
-spec 特征：`in: query` 的 sqlPageParams **加上** `requestBody` 业务对象——两个位置都有料。拆解：
+spec 特征：`in: query` 的 sqlPageParams **加上** `requestBody` 业务对象——两个位置都有料，即「分页的 4 种组合」的**组合 A**。拆解：
 
 ```ts
 /** 园区审核企业认证-分页 */
@@ -129,6 +170,54 @@ delete: (ids: EnterpriseEditorFormModel['id'][]) =>
 
 - `groupBatchIds`（或等价工具）是**项目约定探测点**（见 `project-conventions.md` 探测点 6）：有 → import 使用；没有 → 询问用户，附标准实现建议落位，不擅自创建
 - `ids as string[]` 的断言保留（int64 id 是 string 类型，FormModel['id'] 索引出的可能是 string 字面量联合）
+
+### 形态 8：嵌套 DTO 包装式（组合 C：body 是 `{ page, queryParams }`）
+
+spec 特征：POST + requestBody 顶层含 `page` 对象（子字段含 `current`/`size`，是 MyBatis-Plus `Page<T>` 的全展开）——xbwisdom 有 24 个这种接口。**包装**而非拆解：
+
+```ts
+/** 分页查询全部来访记录 */
+static list = ({ pageNum, pageSize, ...queryParams }: PageQuery<VisitInfoSearchModel>) =>
+  request<ResPage<VisitInfoTableModel>>({
+    method: 'post',
+    url: `${URL}/list`,
+    data: {
+      page: {
+        current: pageNum,
+        size: pageSize
+      },
+      queryParams
+    }
+  })
+```
+
+规则：
+
+- **字段名映射**：`pageNum → page.current`、`pageSize → page.size`（MyBatis-Plus Page 的字段名与 sqlPageParams 不同）
+- **Page 噪音字段零生成**：`countId`/`maxLimit`/`optimizeCountSql`/`optimizeJoinOfCountSql`/`orders`/`pages`/`records`/`searchCount`/`total` 是框架内部字段（多带 `writeOnly: true`），全部不进生成结构
+- **`queryParams` 空洞 → `AnyObject`**：这种切片的 `queryParams` 普遍是空 schema（swagger 对 `Page<T>` 泛型作 DTO 字段的序列化缺陷，查询 DTO 内容未在文档体现）——不入嵌套猜字段、不从 `page.records` 泄漏位捞取（文档没体现的不拓展匹配），直接弱类型 `PageQuery<AnyObject>`，报告标注「spec 泛型序列化缺陷，查询条件无字段定义，建议后端修 swagger 注解后重跑替换」
+- 视图侧消费与其他形态完全同构（入参仍是平铺 `PageQuery<T>`），后端包装怪癖在 api 层吸收
+
+### 形态 9：spec 零定义兜底（组合 D：分页查询参数完全缺失）
+
+spec 特征：响应是分页（data 含 records）但 `parameters` 为空且无 requestBody——xbwisdom 有 16 个（GET 为主，另有 3 个 POST 纯 body 变体：body 顶层平铺全量字段但无分页表达）。
+
+```ts
+/** 用户管理列表 */
+static page = (params: PageQuery<AnyObject>) =>
+  request<ResPage<UserTableModel>>({
+    method: 'get',
+    url: `${URL}/page`,
+    params: {
+      ...params
+    }
+  })
+```
+
+- **不编造查询字段**：spec 没定义就是没定义，存量手写的平铺传参（`...form.value`）是 spec 外运行时事实，不据此生 SearchModel
+- `AnyObject`（`interface AnyObject<T = any>`）在目标项目通常是全局类型（by-investment 与 xbwisdom 的 `global.d.ts` 均有）；没有时按 http 类型探测点询问替代名
+- 报告标注缺口：「spec 未定义查询参数，入参为弱类型；建议后端补 swagger 注解后重跑，替换为 `PageQuery<XxxSearchModel>`」
+- POST 纯 body 变体（body 有字段但无分页结构）：body 字段按常规回链 model 作查询条件，分页参数弱类型并入——判定歧义时问用户
 
 ## 响应类型判定（方法的泛型参数）
 

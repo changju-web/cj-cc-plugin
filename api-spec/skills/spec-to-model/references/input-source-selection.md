@@ -110,14 +110,22 @@ POST/PUT + requestBody 是基本类型（string/number）或响应 data 无结�
 ## 自动识别决策流
 
 ```text
-1. 读 operation.method
-2. 若是 POST/PUT/PATCH 且 requestBody.content[application/json].schema.properties 存在
+1. 读 operation.method 与响应结构
+2. 若响应 data 含 records（分页）→ 形态 B（无论 GET/POST/PUT）：
+   a. 查询条件优先从 parameters 的 query 业务对象收（平铺单字段也收）
+   b. POST/PUT 无 query 业务对象但有 requestBody → 查询条件从 requestBody 收（生查询角色
+      SearchModel，不是 FormModel——POST 分页的 body 是查询条件不是表单；
+      真机：/enterprise/product/page、/module-wechat/visitInfo/list）
+   c. requestBody 是 { page, queryParams } 嵌套 DTO（MyBatis-Plus Page 全展开）→
+      查询条件看 queryParams；queryParams 空 schema（swagger 泛型缺陷）→ 不生查询角色，
+      由 spec-to-api 以 AnyObject 弱类型兜底
+   d. records.items → 列表项角色
+3. 否则若是 POST/PUT/PATCH 且 requestBody.content[application/json].schema.properties 存在
    → 形态 C（body 驱动），取 requestBody
-3. 否则取 response.data：
-   a. 若 data 有 records 字段 → 形态 B（分页），取 data.records.items + parameters.query
-   b. 若 data 是对象 → 形态 A（详情）
-   c. 若 data 是基本类型 → 形态 D（无 model）
-4. 同时存在 requestBody + 响应 data 都有结构 → 问用户（少见）
+4. 否则取 response.data：
+   a. 若 data 是对象 → 形态 A（详情）
+   b. 若 data 是基本类型 → 形态 D（无 model）
+5. 同时存在多种解读且顺序判定后仍歧义 → 问用户（少见）
 ```
 
 ## 一个接口生成多个 model 的命名

@@ -85,7 +85,7 @@ else                                                    → 粘贴模式（当 O
 | **C POST body 驱动** | POST/PUT/PATCH，有 `requestBody.content[application/json].schema.properties` | **requestBody**（响应 data 通常是 string/id，不生 model） | `<Domain>FormModel`（新增/编辑表单） |
 | **D 操作型** | POST/PUT，requestBody 是基本类型 / 响应 data 无结构 | **跳过，不生 model** | 无 |
 
-判定顺序（先满足先生效）：**形态 C → 形态 B → 形态 A → 形态 D**。
+判定顺序（先满足先生效）：**分页响应优先 → 形态 C → 形态 A → 形态 D**。其中「分页响应优先」指：POST/PUT 有 requestBody 但响应 `data` 含 `records`（分页）时，按**形态 B** 处理——requestBody 是查询条件（生 SearchModel），不是表单（不生 FormModel）。真机依据：xbwisdom 有 24+ 个 POST 分页接口查询条件走 body（如 `/module-wechat/visitInfo/list`），by-investment 的 `/enterprise/product/page` 同理；不先看响应会把查询条件错生成为表单。
 
 判定歧义（同时满足多个、或结构不清晰）时，问用户，不臆测。
 

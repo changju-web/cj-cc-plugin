@@ -45,9 +45,9 @@ api-spec/                     — OpenAPI 切片与代码生成插件（拉取 �
     spec-to-model/             — 切片 / 粘贴 OpenAPI → @gx-web/core class model（形态识别、类型语义还原、枚举抽取、三层增量合并；项目约定经 docs/api-spec.md 记忆文件适配）
       references/              — 规则书（类型映射 / FieldName 清洗 / 枚举抽取 / 嵌套与分页 / 输入源选择 / 项目约定探测）
       examples/                — 真机样本（约定探测过程、生成结果、格式对齐前后对照）
-    spec-to-api/               — 切片 → share 层 api 工厂 + app 层薄壳（按实体聚合、方法名尾段+动词映射、schema 回链 model、三层保旧、不编造 spec 外默认值）
+    spec-to-api/               — 切片 → share 层 api 工厂 + app 层薄壳（按实体聚合、方法名尾段+动词映射、schema 回链 model、分页 4 组合 A 拆解/B 双 query 合并/C 嵌套 DTO 包装/D 零定义 AnyObject 兜底、三层保旧、不编造 spec 外默认值）
       references/              — 规则书（实体聚合 / 方法命名 / 请求形态 / 类型回链 / api 侧项目约定探测）
-      examples/                — 真机样本（enterprise-info 全量生成、约定探测过程、无 model 兜底降级）
+      examples/                — 真机样本（enterprise-info 全量生成、约定探测过程、无 model 兜底降级、分页参数 4 组合对照）
 ```
 
 ## Skill 文件职责分离
