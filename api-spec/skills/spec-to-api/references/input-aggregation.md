@@ -53,8 +53,9 @@ Step 4：定产出路径
   → 与 model 文件目录镜像（api/investment/enterprise-info.ts ↔ model/investment/enterprise-info.ts）
 
 Step 5：排序
-  方法排序 = x-order 升序为主键，x-order 相同时按切片文件名字典序稳定兜底
-  （真机数据 x-order 有重复：enterprise-info-id 的 get 与 getEnterpriseInfo 同为 12）
+  方法排序 = x-order 升序为主键，x-order 相同或全部缺失时按切片文件名字典序稳定兜底
+  （真机数据 x-order 有重复：enterprise-info-id 的 get 与 getEnterpriseInfo 同为 12；
+   xbwisdom 企业模块切片普遍无 x-order，全缺时直接字典序）
 ```
 
 ## 前缀不一致（分组询问）

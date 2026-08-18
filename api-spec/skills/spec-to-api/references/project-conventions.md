@@ -84,7 +84,17 @@ export const groupBatchIds = (ids: string[], key = 'id') =>
 
 ### 7. share 包名
 
-**信号**：app 薄壳里工厂的 import 来源（如 `from '@gx-web/share'`）。app 无既有薄壳可读 → 从 `package.json` dependencies 里找含 model/api 的 workspace 包 → 还定不下来问用户。薄壳的工厂 import 用它。
+**信号**：app 薄壳里工厂的 import 来源（如 `from '@gx-web/share'`）。app 无既有薄壳可读 → 从 `package.json` dependencies 里找含 model/api 的 workspace 包 → 还定不下来问用户。薄壳的工厂 import 用它。静态类形态（app 级 request 绑定）下此点退化为 model 引用包名（如 `from '@gx-web/biz'`，xbwisdom 实测）。
+
+### 8. RESTful 动词映射校准（xbwisdom 真跑新增）
+
+**信号**：存量 api 文件里 DELETE/POST/PUT 资源根端点的方法名分布。
+
+```text
+grep 存量 DELETE 方法 → remove（xbwisdom：user.ts / permission-group.ts）还是 delete（by-investment）
+→ 有统一惯例 → 按惯例，写入 docs/api-spec.md「RESTful 动词映射（本项目校准）」段
+→ 无存量样本 → 按默认映射表（byId/insert/update/delete），首例生成后补记忆
+```
 
 ## 记忆文件的 api 侧段落（模板）
 

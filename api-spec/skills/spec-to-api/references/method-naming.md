@@ -55,7 +55,9 @@ POST /login                 → login
 | PUT | `/` 或 `/{id}` | `update` | 修改 |
 | DELETE | `/` 或 `/{id}` | `delete` | 删除（批量 id 走 query） |
 
-映射名（byId/insert/update/delete）来自存量手写代码的既有事实，**不是臆造**——生成结果与存量一致，增量合并才不会撞出"同一端点两个方法名"。
+映射名（byId/insert/update/delete）来自**存量手写代码的既有事实**，不是臆造——生成结果与存量一致，增量合并才不会撞出"同一端点两个方法名"。
+
+⚠️ **映射表是默认值，按项目存量校准**（xbwisdom 真跑验证）：动词命名存在项目方言——by-investment 用 `delete`（DELETE 批量），xbwisdom 用 `remove`（DELETE `/{id}`，user/permission-group 多数派）。首次为项目生成 RESTful 方法时，先 grep 存量 api 的 DELETE 方法名：有统一惯例（如 remove）→ 按惯例并记入 `docs/api-spec.md` 的「RESTful 动词映射（本项目校准）」段；无存量样本 → 按默认映射表，首例生成后补记忆。
 
 ### 规则 3：重名消歧 → 停下询问
 

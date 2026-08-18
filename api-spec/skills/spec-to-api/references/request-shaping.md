@@ -230,6 +230,12 @@ static page = (params: PageQuery<AnyObject>) =>
 | 数组 | `Res<Model[]>` | list → `Res<EnterpriseAndBuildingModel[]>` |
 | `boolean` | `Res<boolean>` | saveEnterpriseApply |
 | `string` / 无结构 | `Res<string>` | 导出类接口 |
+| **裸 object**（`{ type: object }` 无 properties，swagger 泛型丢失） | 详见下 | xbwisdom 高发（vehicle-focus 5 切片中 4 个） |
+
+**裸 object 的分级处理**（不编造 ≠ 一律 any）：
+
+- **详情/查询型接口**（GET `/{id}`、GET 列表类，语义明确返回该实体）→ **语义回链**：引用该实体已有 model（如 `Res<VehicleFocusEntity>`），报告标注「响应 schema 缺失（泛型丢失），按实体语义回链 `<Entity>`，建议后端补 swagger 注解」。实体 model 已知，回链不是臆造字段
+- **写入/操作型接口**（POST 保存/校验/删除，返回值语义未知——可能是 boolean/void/id）→ **不写泛型**（返回推断 any），报告标注缺口。不猜 `Res<boolean>`（猜错比 any 更糟）
 
 `data` 内部的具体 class 引用走 `type-binding.md` 的回链。分页元字段（total/size/current 等）已被切片折叠标注（`$simplified`），不需要也不应该出现在泛型里——`ResPage` 已含。
 
