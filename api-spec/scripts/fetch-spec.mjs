@@ -106,7 +106,11 @@ console.log(`网关地址: ${resolved.base}（来源：${resolved.from}）`)
 
 // ============ 3. 拉服务清单 ============
 const getJson = async (url, label) => {
-  const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) }).catch((e) => {
+  const res = await fetch(url, {
+    // UA 形如 curl/x.y.z：部分网关按 UA 做防护，非 curl 形态的 UA 会 500/挂起（实测 10.18.80.17:9103 的部分路由）
+    headers: { 'User-Agent': 'curl/8.9.1 (api-spec fetch-spec)' },
+    signal: AbortSignal.timeout(TIMEOUT_MS)
+  }).catch((e) => {
     throw new Error(`${label} 请求失败: ${e.message}`)
   })
   if (!res.ok) throw new Error(`${label} 返回 HTTP ${res.status}`)

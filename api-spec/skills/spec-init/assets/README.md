@@ -67,7 +67,7 @@ api-spec/
 替代「手动打开 doc.html → 下载 openapi.json → 覆盖 input/」的浏览器操作：
 
 1. **定位网关**：优先级 `--base=` 参数 > `OPENAPI_BASE` 环境变量 > config.json 的 `base` > env 文件探测（按 Vite 优先级读 `.env.development.local` → `.env.development` 的 `envKey` 变量，查找目录为 `envDirs` 或自动探测）。
-2. **直连拉取**：`GET {base}/v3/api-docs/swagger-config` 拿服务清单（含每个服务的网关前缀 `contextPath`，缺失时从 `url` 推导），逐个 `GET {base}<url>` 下载——与 doc.html 页面的数据源相同，无需浏览器、无需登录。下载的 json paths 不含网关前缀，落盘前把 contextPath 以顶层扩展字段 `x-context-path` 一并写入。
+2. **直连拉取**：`GET {base}/v3/api-docs/swagger-config` 拿服务清单（含每个服务的网关前缀 `contextPath`，缺失时从 `url` 推导），逐个 `GET {base}<url>` 下载——与 doc.html 页面的数据源相同，无需浏览器、无需登录。请求 UA 固定为 `curl/x.y.z` 形态（部分网关按 UA 防护，非 curl 形态会 500/挂起）。下载的 json paths 不含网关前缀，落盘前把 contextPath 以顶层扩展字段 `x-context-path` 一并写入。
 3. **默认只刷新已有服务**：`input/` 里已存在 `<服务名>_OpenAPI.json` 的才覆盖；`--all` 拉全部、`--only=a,b` 指定（可拉新服务）。
 4. **内容比对防误写**：规范化键序后深度比较，无变化不写盘（避免 git 噪音）；请求失败或响应不是合法 OpenAPI 时保留旧文件、非零码退出。
 5. **自动重跑 gen-spec.mjs**：拉取全部成功后直接生成切片（`--no-gen` 跳过）。
