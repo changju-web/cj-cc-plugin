@@ -119,6 +119,7 @@ grep 存量 DELETE 方法 → remove（xbwisdom：user.ts / permission-group.ts�
 
 ## 探测的可靠性原则（补充两条）
 
+- **文件名与 model 镜像（kebab-case 默认）**：api 文件名跟随同实体 model 文件名（`vehicle-focus.ts` ↔ `vehicle-focus.ts`），默认 kebab-case；存量 camelCase 多数派（xbwisdom dictType/user）是历史欠债，用户拍板 kebab 后不再新增（与「用户意图优先」同源）
 - **用户意图优先于存量多数派**：探测到「存量形态 ≠ 目标形态」时不拿多数派压用户——典型如 xbwisdom：`apps/web/src/api` 是 13 个文件的 app 级静态类（default export、request 直连），但用户明确「统一后端服务 → api 工厂入共享包 biz，各 app 注入自己的 request」。此时按用户决策生成工厂 + 薄壳，约定记忆标注「存量静态类为历史欠债，不再新增」。探测给出的是**现状**，用户给的是**方向**
 - **共享包内不引用 app 侧全局声明**：共享包（biz/share）编译环境看不到 app 或其他包的全局 d.ts（如 `AnyObject`）——包内弱类型用 `PageQuery` 默认泛型 `Record<string, any>`，不依赖全局
 

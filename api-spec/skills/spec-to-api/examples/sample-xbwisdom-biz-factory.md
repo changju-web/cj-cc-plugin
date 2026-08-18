@@ -10,6 +10,7 @@ spec-to-api 在 xbwisdom 真跑的**定稿形态**（v0.4.x 规则，经用户�
   → api 工厂入共享包 biz（packages/biz/src/api），各 app 注入自己的 request
   → 导出命名化（非 default），实例名 Api 结尾
   → PageQuery 等类型与 api 同包统一管理（biz/src/types/api.ts）
+  → 文件名 kebab-case（vehicle-focus.ts，与 model 文件名镜像）
 约定记忆标注：存量静态类为历史欠债，不再新增
 ```
 
@@ -55,7 +56,7 @@ export type ApiRequest = <T>(config: AxiosRequestConfig) => Promise<T>
 - **axios 显式依赖**：biz package.json 加 `axios: catalog:`（不靠根 node_modules 隐式解析）
 - **不引用 app 侧全局**：包内弱类型用 `PageQuery` 默认泛型（Record<string, any>），不用全局 AnyObject（biz 编译环境看不到）
 
-## 产物 2：biz/src/api/enterprise/vehicleFocus.ts（工厂）
+## 产物 2：biz/src/api/enterprise/vehicle-focus.ts（工厂）
 
 ```ts
 import type { ApiRequest, PageQuery, Res, ResPage } from '../../types'
@@ -115,7 +116,7 @@ export 链：`api/enterprise/index.ts` → `api/index.ts` → `src/index.ts`（`
 
 ## 产物 3：app 薄壳 ×2（命名导出）
 
-apps/web/src/api/enterprise/vehicleFocus.ts：
+apps/web/src/api/enterprise/vehicle-focus.ts：
 
 ```ts
 import { createVehicleFocusApi } from '@gx-web/biz'
@@ -125,7 +126,7 @@ import request from '@/plugins/axios'
 export const VehicleFocusApi = createVehicleFocusApi(request)
 ```
 
-apps/mini-program/src/api/enterprise/vehicleFocus.ts（仅注入点不同；mini 的 api 目录随首建，barrel 对齐 web）：
+apps/mini-program/src/api/enterprise/vehicle-focus.ts（仅注入点不同；mini 的 api 目录随首建，barrel 对齐 web）：
 
 ```ts
 import { createVehicleFocusApi } from '@gx-web/biz'
