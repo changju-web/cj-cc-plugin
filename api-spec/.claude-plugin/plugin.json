@@ -1,7 +1,7 @@
 {
   "name": "api-spec",
   "description": "OpenAPI 切片与代码生成插件（拉取 → 切片 → model → api 全链路）：spec-init 一键初始化 api-spec 目录 + 注入 AGENTS.md 识别纪律，spec-pull 引导网关拉取/重切片，spec-to-model 从切片生成 @gx-web/core class model，spec-to-api 从切片 + model 生成 api 工厂与 app 薄壳（项目约定自动探测）",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "repository": "https://github.com/changju-web/cj-cc-marketplace",
   "author": {
     "name": "wangjiahui",

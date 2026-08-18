@@ -112,17 +112,16 @@ id 类参数写法沿用现有惯例：`XxxFormModel['id']`（索引访问类型
 每个 app 一份，与 share 工厂同相对路径（镜像服务域子目录）：
 
 ```ts
-import { createEnterpriseInfoApi } from '@gx-web/share'
+import { createVehicleFocusApi } from '@gx-web/biz'
 
-import request from '@/plugins/axios'
+import request from '@/service'
 
-const EnterpriseInfoApi = createEnterpriseInfoApi(request)
-
-export default EnterpriseInfoApi
+export const VehicleFocusApi = createVehicleFocusApi(request)
 ```
 
-- 工厂 import 来源：share 包名（项目约定探测）
+- 工厂 import 来源：api 产出所在共享包（项目约定探测，如 `@gx-web/share` / `@gx-web/biz`）
 - `request` 注入点：**每 app 不同**（web 可能是 `@/plugins/axios`，小程序可能是 `@/service`），从各 app 现有薄壳/请求层探测，记入 `docs/api-spec.md`；app 无既有注入点可探测 → 询问，不猜
+- **导出形式是约定项**：by-investment 惯例 `const XxxApi = ...; export default`（default 导出）；xbwisdom 用户拍板命名导出 `export const XxxApi = ...`（且实例名 Api 结尾）。探测存量薄壳先例；无先例默认命名导出（`export *` barrel 可转发），首例后记入约定
 - app 无 api 目录 → 询问是否新建该 app 的目录结构，不擅自创建
 
 ## 工作流

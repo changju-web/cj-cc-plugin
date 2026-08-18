@@ -101,16 +101,35 @@ grep 存量 DELETE 方法 → remove（xbwisdom：user.ts / permission-group.ts�
 以下段落在首次运行时补进 `docs/api-spec.md`（已有的 `api 形态` 段是 spec-to-model 侧预写的，保留不动）：
 
 ```markdown
+## http 类型（统一落位）
+- 类型文件：<共享包>/src/types/api.ts（Res / ResPage / PageQuery / ApiRequest），经包出口 import
+- 双源说明（如有全局声明版）：结构同构，全局版供存量、包版供新生成
+
 ## app 层注入
 - app 清单与 request 注入点：apps/web → @/plugins/axios；apps/mini-program → @/service
-- app api 目录：apps/<app>/src/api（镜像 share 的服务域子目录）
-- share 包名：@gx-web/share
+- app api 目录：apps/<app>/src/api（镜像共享包服务域子目录）
+- 薄壳导出形式：export const XxxApi = createXxxApi(request)（命名导出）或 default（按项目先例）
+- 共享包名：@gx-web/share（或 @gx-web/biz）
 
 ## 批量 id 工具
 - groupBatchIds：packages/share/src/utils（'id=1&id=2' 重复 key 格式，DELETE 批量用）
 ```
 
 更新策略与 model 侧一致：**首次全量、增量补缺、永不覆盖**（用户手改过的条目尊重原样）。
+
+## 探测的可靠性原则（补充两条）
+
+- **用户意图优先于存量多数派**：探测到「存量形态 ≠ 目标形态」时不拿多数派压用户——典型如 xbwisdom：`apps/web/src/api` 是 13 个文件的 app 级静态类（default export、request 直连），但用户明确「统一后端服务 → api 工厂入共享包 biz，各 app 注入自己的 request」。此时按用户决策生成工厂 + 薄壳，约定记忆标注「存量静态类为历史欠债，不再新增」。探测给出的是**现状**，用户给的是**方向**
+- **共享包内不引用 app 侧全局声明**：共享包（biz/share）编译环境看不到 app 或其他包的全局 d.ts（如 `AnyObject`）——包内弱类型用 `PageQuery` 默认泛型 `Record<string, any>`，不依赖全局
+
+## http 类型的统一落位（多 app 共享场景）
+
+api 产出落共享包时，`PageQuery` 等新建类型**与 api 同包统一管理**，不放 app 侧、不散落全局声明（xbwisdom 用户决策）：
+
+- 落位：`<共享包>/src/types/api.ts`，经该包 `types/index.ts` → `src/index.ts` 挂入出口，app 从包名 import
+- 内容：`Res` / `ResPage` / `PageQuery` / `ApiRequest`（工厂 request 注入签名 `<T>(config: AxiosRequestConfig) => Promise<T>`，抽出后各工厂文件不用重复内联）
+- **双源共存**：项目已有全局声明版 Res/ResPage（存量在用）时，包内版与全局版**结构必须同构**（结构类型互换无碍），约定记忆标注双源与消亡路径
+- axios 类型依赖：`import type { AxiosRequestConfig } from 'axios'` 需包 package.json 显式声明（catalog 或对齐 app 版本），不靠根 node_modules 隐式解析（xbwisdom：biz 加 `axios: catalog:^1.15.0` 后 pnpm install）
 
 ## 探测时机
 
