@@ -24,9 +24,12 @@ export const SystemStatusValue = {
 ```ts
 /** 发布状态 */
 export const ReleaseStatus = {
-  /** 待处理 */ pending: 0,
-  /** 上架 */   listing: 1,
-  /** 下架 */   offline: 2
+  /** 待处理 */
+  pending: 0,
+  /** 上架 */
+  listing: 1,
+  /** 下架 */
+  offline: 2
 } as const
 export type ReleaseStatus = ValueOf<typeof ReleaseStatus>
 ```
@@ -89,17 +92,23 @@ type ValueOf<T> = T[keyof T]
 
 /** 发布状态 */
 export const ReleaseStatus = {
-  /** 待处理 */ pending: 0,
-  /** 上架 */   listing: 1,
-  /** 下架 */   offline: 2
+  /** 待处理 */
+  pending: 0,
+  /** 上架 */
+  listing: 1,
+  /** 下架 */
+  offline: 2
 } as const
 export type ReleaseStatus = ValueOf<typeof ReleaseStatus>
 
 /** 审核状态 */
 export const ReviewStatus = {
-  /** 待审核 */ pending: 0,
-  /** 已通过 */ approved: 1,
-  /** 不通过 */ rejected: 2
+  /** 待审核 */
+  pending: 0,
+  /** 已通过 */
+  approved: 1,
+  /** 不通过 */
+  rejected: 2
 } as const
 export type ReviewStatus = ValueOf<typeof ReviewStatus>
 
@@ -146,12 +155,13 @@ key 用 camelCase，不用 SCREAMING_SNAKE_CASE（若项目枚举字典文件另
 
 ### 注释
 
-每个枚举项保留中文注释：
+每个枚举项保留中文注释，**注释独立写在成员上一行**（不写在行内；对齐项目现有字典文件的风格）：
 
 ```ts
 /** 发布状态 */
 export const ReleaseStatus = {
-  /** 待处理 */ pending: 0,
+  /** 待处理 */
+  pending: 0,
   ...
 }
 ```

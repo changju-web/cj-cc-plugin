@@ -152,9 +152,12 @@ spec description 里出现 `(0、待处理 1、上架 2、下架)` 这类**内�
 ```ts
 /** 发布状态 */
 export const ReleaseStatus = {
-  /** 待处理 */ pending: 0,
-  /** 上架 */   listing: 1,
-  /** 下架 */   offline: 2
+  /** 待处理 */
+  pending: 0,
+  /** 上架 */
+  listing: 1,
+  /** 下架 */
+  offline: 2
 } as const
 
 export type ReleaseStatus = ValueOf<typeof ReleaseStatus>
@@ -235,7 +238,8 @@ import { ClassName, FieldName } from '@gx-web/core'
 
 /** <业务名>枚举（spec description 内联枚举） */
 export const XxxStatus = {
-  /** <中文> */ <key>: <value>,
+  /** <中文> */
+  <key>: <value>,
   ...
 } as const
 export type XxxStatus = ValueOf<typeof XxxStatus>

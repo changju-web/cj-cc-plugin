@@ -18,17 +18,23 @@ type ValueOf<T> = T[keyof T]
 
 /** 发布状态 */
 export const ReleaseStatus = {
-  /** 待处理 */ pending: 0,
-  /** 上架 */   listing: 1,
-  /** 下架 */   offline: 2
+  /** 待处理 */
+  pending: 0,
+  /** 上架 */
+  listing: 1,
+  /** 下架 */
+  offline: 2
 } as const
 export type ReleaseStatus = ValueOf<typeof ReleaseStatus>
 
 /** 审核状态 */
 export const ReviewStatus = {
-  /** 待审核 */  pending: 0,
-  /** 已通过 */  approved: 1,
-  /** 不通过 */  rejected: 2
+  /** 待审核 */
+  pending: 0,
+  /** 已通过 */
+  approved: 1,
+  /** 不通过 */
+  rejected: 2
 } as const
 export type ReviewStatus = ValueOf<typeof ReviewStatus>
 
