@@ -42,4 +42,5 @@ description: "后端接口更新后刷新 api-spec 切片：从开发环境网�
 各服务的 contextPath（或「未知」警示——提醒用户走 config.json 的 `contextPaths` 补映射）、
 新引入的服务（`output/` 会多一个子目录）。最后提醒一句：切片使用纪律不变（按需 Read，禁止整份灌入），
 新切片生效后业务代码以当前 spec 为准；如需把接口变更同步进 model，可用 spec-to-model skill
-基于新切片增量重生成（三层保旧，不动已有手改字段）。
+基于新切片增量重生成（三层保旧，不动已有手改字段）；如需同步进 api，可用 spec-to-api skill
+基于同批切片增量追加方法（文件 → 方法 → import 三层保旧，spec 已删接口只报告不删）。

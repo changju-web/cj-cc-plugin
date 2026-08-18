@@ -1,11 +1,11 @@
 ---
 name: spec-to-model
-description: 从 api-spec 切片或粘贴的 OpenAPI 单接口 JSON 生成 @gx-web/core class model，产出到项目约定的 model 目录（自动探测，首次运行生成 docs/api-spec.md 记忆），作为（规划中的）spec-to-api 的上游。当用户提供 api-spec/output 下的切片文件路径、粘贴一段 OpenAPI schema/operation JSON、要求"根据接口生成 model/class/类型"、"生成数据模型"、"按接口生成 class"、"spec 转 model"、"从 swagger 生成类型"时触发。专注质量：语义还原类型、@FieldName 全文清洗修撞名、@ClassName 总生、内联枚举抽具名 const + type、三层增量合并保旧手改。跨项目通用（@gx-web/core 为核心，目录/命名等约定可适配）。明确不生 @Default（与直接赋值冗余）、不生 @Dict（运行时字典尚在设计中）、不写 api（走规划中的 spec-to-api）、不写 vue 页面。
+description: 从 api-spec 切片或粘贴的 OpenAPI 单接口 JSON 生成 @gx-web/core class model，产出到项目约定的 model 目录（自动探测，首次运行生成 docs/api-spec.md 记忆），作为 spec-to-api 的上游。当用户提供 api-spec/output 下的切片文件路径、粘贴一段 OpenAPI schema/operation JSON、要求"根据接口生成 model/class/类型"、"生成数据模型"、"按接口生成 class"、"spec 转 model"、"从 swagger 生成类型"时触发。专注质量：语义还原类型、@FieldName 全文清洗修撞名、@ClassName 总生、内联枚举抽具名 const + type、三层增量合并保旧手改。跨项目通用（@gx-web/core 为核心，目录/命名等约定可适配）。明确不生 @Default（与直接赋值冗余）、不生 @Dict（运行时字典尚在设计中）、不写 api（走 spec-to-api）、不写 vue 页面。
 ---
 
 # api-spec 切片 / OpenAPI → @gx-web/core class model
 
-把一份 OpenAPI schema（优先来自本项目 `api-spec/output/` 的预处理切片）转换成符合 `@gx-web/core` 装饰器约定的 class model，**产出到项目约定的 model 目录**（由 `docs/api-spec.md` 决定，如 `packages/share/src/model`）。这些 model 是 `spec-to-api` skill（规划中，尚未提供）的上游——api 直接 import 消费它们。本 skill 不生 api、不碰页面。
+把一份 OpenAPI schema（优先来自本项目 `api-spec/output/` 的预处理切片）转换成符合 `@gx-web/core` 装饰器约定的 class model，**产出到项目约定的 model 目录**（由 `docs/api-spec.md` 决定，如 `packages/share/src/model`）。这些 model 是 `spec-to-api` skill 的上游——api 直接 import 消费它们。本 skill 不生 api、不碰页面。
 
 ## 何时触发
 
@@ -16,7 +16,7 @@ description: 从 api-spec 切片或粘贴的 OpenAPI 单接口 JSON 生成 @gx-w
 
 ## 何时**不**触发
 
-- 要生成 api 工厂（`createXxxApi`）→ 走 `spec-to-api`（规划中，暂由人工或后续 skill 承接）
+- 要生成 api 工厂（`createXxxApi`）→ 走 `spec-to-api`（本插件，基于同批切片 + 本 skill 的 model 产出）
 - 要生成完整页面（列表/详情/表单）→ 走 `wd-comp`（小程序）或 `ep-comp`（web）
 - 要给 model 套字典 `@Dict(code)` → 运行时字典体系设计中，本 skill 不越界
 - 要给 model 加默认值 `@Default(...)` → 与 `xxx = []` 直接赋值语义冗余，本 skill 不生
@@ -358,14 +358,14 @@ industryCode!: string
 
 ## 不做的事
 
-- 不生成 api（走 `spec-to-api`，规划中）
-- 不生成 app 层 api 实例化 → app 层职责
+- 不生成 api（走 `spec-to-api`）
+- 不生成 app 层 api 实例化薄壳（走 `spec-to-api`）
 - 不生成 `index.vue` / 任何页面
 - 不跑构建（只生类型声明，类型风险低；如需验证用户另行 ts-check）
 - 不动路由/构建配置
 
 ## 配套 skill
 
-- **spec-to-api**（规划中，尚未提供）：本 skill 的直接下游。model 生成完后，跑 spec-to-api 基于同一份 spec 切片 + 刚生成的 model，产出项目约定的 api 封装。落地前 api 层由人工承接
+- **spec-to-api**（本插件）：本 skill 的直接下游。model 生成完后，跑 spec-to-api 基于同一批 spec 切片 + 刚生成的 model，产出项目约定的 api 封装（share 层工厂 + app 层薄壳）。收尾时主动提示用户可继续
 - **wd-comp / ep-comp**（本市场插件）：页面生成 skill。它们消费项目的 model + api
 - **api-spec 识别纪律**：见项目 `AGENTS.md` 的 api-spec 识别纪律段（由 spec-init skill 初始化时注入）。本 skill 默认输入就是 `api-spec/output/` 切片

@@ -26,6 +26,18 @@ _Avoid_: 完整地址（含 host 时才叫地址）
 
 **约定记忆文件（conventions memory file）**:
 
-spec-to-model 在目标项目里生成并维护的 `docs/api-spec.md`，记录该项目的 model/api 目录、命名、http 类型等生成约定；由探测 + 询问产出，允许人工编辑，下次运行以文件内容为准，删除即触发重新探测。
+spec-to-model / spec-to-api 在目标项目里生成并维护的 `docs/api-spec.md`，记录该项目的 model/api 目录、命名、http 类型、app 注入点等生成约定；由探测 + 询问产出，允许人工编辑，下次运行以文件内容为准，删除即触发重新探测。
 
 _Avoid_: 配置文件（它是记忆不是配置）、缓存（进版本库、团队共享）
+
+**api 工厂（api factory）**:
+
+share 层的 `createXxxApi(request)` 工厂函数，接收注入的 request 实例、返回该实体的方法集，使 api 定义与各 app 的 axios 配置解耦。是 spec-to-api 的 share 层产物。
+
+_Avoid_: api 类、api 服务（没有实例化语义）
+
+**app 层薄壳（app shell）**:
+
+app 内约 6 行的实例化文件：从 share 包导入 api 工厂、注入本 app 的 request、默认导出实例。每个 app 一份，request 注入点各不相同。
+
+_Avoid_: 包装器（它是纯实例化，无包装逻辑）

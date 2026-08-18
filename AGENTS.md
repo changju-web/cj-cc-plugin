@@ -32,7 +32,7 @@ ssd-workflow/                 — Spec-Driven Development 工作流编排插件�
     ssd-plan/                 — 阶段 2 HOW：→ superpowers:writing-plans
     ssd-apply/                — 阶段 3 执行：按 plan 实现 + 执行纪律路由
     ssd-archive/              — 阶段 4 归档：→ /opsx:archive
-api-spec/                     — OpenAPI 切片与模型生成插件（源：by-investment-platform-frontend）
+api-spec/                     — OpenAPI 切片与代码生成插件（拉取 → 切片 → model → api 全链路，源：by-investment-platform-frontend）
   .claude-plugin/
     plugin.json               — 插件元数据
   scripts/                     — 插件级共享脚本，init 时复制进目标项目 api-spec/scripts/
@@ -45,6 +45,9 @@ api-spec/                     — OpenAPI 切片与模型生成插件（源：by
     spec-to-model/             — 切片 / 粘贴 OpenAPI → @gx-web/core class model（形态识别、类型语义还原、枚举抽取、三层增量合并；项目约定经 docs/api-spec.md 记忆文件适配）
       references/              — 规则书（类型映射 / FieldName 清洗 / 枚举抽取 / 嵌套与分页 / 输入源选择 / 项目约定探测）
       examples/                — 真机样本（约定探测过程、生成结果、格式对齐前后对照）
+    spec-to-api/               — 切片 → share 层 api 工厂 + app 层薄壳（按实体聚合、方法名尾段+动词映射、schema 回链 model、三层保旧、不编造 spec 外默认值）
+      references/              — 规则书（实体聚合 / 方法命名 / 请求形态 / 类型回链 / api 侧项目约定探测）
+      examples/                — 真机样本（enterprise-info 全量生成、约定探测过程、无 model 兜底降级）
 ```
 
 ## Skill 文件职责分离
