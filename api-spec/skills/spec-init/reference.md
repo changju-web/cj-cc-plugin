@@ -10,7 +10,8 @@
   "base": "http://10.18.80.20:9102",
   "envKey": "VITE_APP_BASE_API",
   "envDirs": ["apps/web"],
-  "noisyPrefixes": ["/inner"]
+  "noisyPrefixes": ["/inner"],
+  "contextPaths": { "招商管理": "/investment" }
 }
 ```
 
@@ -20,6 +21,7 @@
 | `envKey` | string | `VITE_APP_BASE_API` | fetch-spec 在 env 文件里找的变量名。非 Vite 项目或端用不同命名时改（如 `VITE_APP_API_URL`） |
 | `envDirs` | string[] | 自动探测 | env 文件查找目录（相对项目根）。缺省：monorepo（有 `apps/`）逐个扫 `apps/*`（目录名排序，先到先得），否则扫根目录 |
 | `noisyPrefixes` | string[] | 见 gen-spec 内置 | **追加**噪音端点前缀（内置 `/actuator` `/v3/api-docs` `/swagger-resources` `/swagger-ui` `/doc.html` 已生效，无需重复写） |
+| `contextPaths` | Record&lt;string, string&gt; | 无 | 手动下载的 json（无 `x-context-path` 元数据）的网关前缀映射，key 为服务名。走 fetch-spec 拉取的 json 不需要配（脚本自动写入元数据）；两者皆无时 index.md 标注「未知」 |
 
 优先级（fetch-spec 解析网关地址）：`--base` CLI > `OPENAPI_BASE` 环境变量 > `config.base` > env 文件探测。
 

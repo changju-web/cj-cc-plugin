@@ -32,10 +32,13 @@ description: "后端接口更新后刷新 api-spec 切片：从开发环境网�
 ### B. 手头已有 json（非该网关导出，如后端直接发的文件）
 
 1. 放进 `api-spec/input/`，命名 `<服务名>_OpenAPI.json`（服务名决定 `output/` 子目录名）
-2. 跑 `gen:spec`（`pnpm gen:spec` / `npm run gen:spec` / `node api-spec/scripts/gen-spec.mjs`）
+2. 网关前缀（contextPath）没随 json 来——这类文件的切片 path 会缺前缀。在 `api-spec/config.json` 配
+   `contextPaths` 映射补上：`{ "contextPaths": { "<服务名>": "/<前缀>" } }`
+3. 跑 `gen:spec`（`pnpm gen:spec` / `npm run gen:spec` / `node api-spec/scripts/gen-spec.mjs`）
 
 ## 汇报
 
 转述脚本输出的**变更明细**：哪个服务有变化/无变化、各服务 paths 与 schemas 数量、
+各服务的 contextPath（或「未知」警示——提醒用户走 config.json 的 `contextPaths` 补映射）、
 新引入的服务（`output/` 会多一个子目录）。最后提醒一句：切片使用纪律不变（按需 Read，禁止整份灌入），
 新切片生效后业务代码以当前 spec 为准。

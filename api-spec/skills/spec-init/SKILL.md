@@ -85,5 +85,5 @@ README 复制前把 `{{CMD_GEN}}` / `{{CMD_PULL}}` 占位符替换为实际命�
 列出：创建了什么（目录树 + 注入的 scripts + 纪律段落点 + config.json 是否生成及内容）。
 下一步二选一，交给用户：
 
-- 网关可达 → `{{RUN}} spec:pull --all` 首次拉取并自动切片
-- 手头已有 json → 放进 `api-spec/input/`（命名 `<服务名>_OpenAPI.json`）后跑 `{{RUN}} gen:spec`
+- 网关可达 → `{{RUN}} spec:pull --all` 首次拉取并自动切片（contextPath 自动随 json 落盘）
+- 手头已有 json → 放进 `api-spec/input/`（命名 `<服务名>_OpenAPI.json`）；这类 json 没有网关前缀元数据，需在 `api-spec/config.json` 配 `contextPaths` 映射，然后跑 `{{RUN}} gen:spec`

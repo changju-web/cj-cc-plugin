@@ -51,7 +51,8 @@ api-spec/
   "base": "http://10.18.80.20:9102",
   "envKey": "VITE_APP_BASE_API",
   "envDirs": ["apps/web"],
-  "noisyPrefixes": ["/inner"]
+  "noisyPrefixes": ["/inner"],
+  "contextPaths": { "招商管理": "/investment" }
 }
 ```
 
@@ -59,13 +60,14 @@ api-spec/
 - `envKey`：fetch-spec 在 env 文件里找的变量名（缺省 `VITE_APP_BASE_API`）
 - `envDirs`：env 文件查找目录，相对项目根（缺省自动探测：monorepo 扫 `apps/*`，单仓扫根目录）
 - `noisyPrefixes`：**追加**噪音端点前缀（内置 `/actuator` 等已生效）
+- `contextPaths`：手动下载的 json 的网关前缀映射（key 为服务名）。走 spec:pull 拉取的 json 自带 `x-context-path` 元数据，不需要配
 
 ## 拉取脚本做了什么（fetch-spec.mjs）
 
 替代「手动打开 doc.html → 下载 openapi.json → 覆盖 input/」的浏览器操作：
 
 1. **定位网关**：优先级 `--base=` 参数 > `OPENAPI_BASE` 环境变量 > config.json 的 `base` > env 文件探测（按 Vite 优先级读 `.env.development.local` → `.env.development` 的 `envKey` 变量，查找目录为 `envDirs` 或自动探测）。
-2. **直连拉取**：`GET {base}/v3/api-docs/swagger-config` 拿服务清单，逐个 `GET {base}<url>` 下载——与 doc.html 页面的数据源相同，无需浏览器、无需登录。
+2. **直连拉取**：`GET {base}/v3/api-docs/swagger-config` 拿服务清单（含每个服务的网关前缀 `contextPath`，缺失时从 `url` 推导），逐个 `GET {base}<url>` 下载——与 doc.html 页面的数据源相同，无需浏览器、无需登录。下载的 json paths 不含网关前缀，落盘前把 contextPath 以顶层扩展字段 `x-context-path` 一并写入。
 3. **默认只刷新已有服务**：`input/` 里已存在 `<服务名>_OpenAPI.json` 的才覆盖；`--all` 拉全部、`--only=a,b` 指定（可拉新服务）。
 4. **内容比对防误写**：规范化键序后深度比较，无变化不写盘（避免 git 噪音）；请求失败或响应不是合法 OpenAPI 时保留旧文件、非零码退出。
 5. **自动重跑 gen-spec.mjs**：拉取全部成功后直接生成切片（`--no-gen` 跳过）。
@@ -75,12 +77,13 @@ api-spec/
 对每份 input json 做这些处理（产物已简化，agent 无需重复处理）：
 
 1. **过滤噪音端点**：`/actuator`、`/v3/api-docs`、`/swagger-resources`、`/swagger-ui`、`/doc.html` 等 Spring Boot 运维端点直接剔除（config.json 可追加）。
-2. **`$ref` 内联展开**：`#/components/schemas/X` 全部递归展开成完整字段，agent 不用跨文件追引用。
-3. **响应裁剪**：每个 operation 只保留 2xx 成功响应，4xx/5xx 失败结构砍掉，避免重复展开。
-4. **折叠 MyBatis-Plus IPage 框架字段**：分页响应里的 `countId`/`maxLimit`/`optimizeCountSql`/`optimizeJoinOfCountSql`/`searchCount`/`pages`/`orders` 等框架内部字段移除，保留业务字段（`records`/`total`/`size`/`current`），并用 `$simplified` 标记注明折叠了啥。
-5. **多服务支持**：扫 `input/` 下所有 `.json`；子目录形式 `input/<服务名>/openapi.json` 用目录名作服务名，平铺形式用文件名（自动去掉 `_OpenAPI`/`api-docs`/`swagger` 等后缀）。
-6. **索引从数据推导**：接口按 spec 自带 `tags` 分组；Schema 一览按「引用该 schema 的接口的 tag」派生分组（引用次数最多的 tag），无接口引用的归「未在接口中引用」——不依赖任何业务知识写死。
-7. **全量重跑**：每次清空 `output/` 重建，不做增量（开发辅助工具，全量也就十几秒，不值得引入状态管理）。
+2. **拼接网关前缀**：切片 `path` = contextPath + 服务内路径，即前端真实调用路径。优先级：input json 的 `x-context-path` > config.json 的 `contextPaths` 映射 > 无（index.md 标注「未知」）。切片文件名保持服务内路径（产物目录已按服务分组）。
+3. **`$ref` 内联展开**：`#/components/schemas/X` 全部递归展开成完整字段，agent 不用跨文件追引用。
+4. **响应裁剪**：每个 operation 只保留 2xx 成功响应，4xx/5xx 失败结构砍掉，避免重复展开。
+5. **折叠 MyBatis-Plus IPage 框架字段**：分页响应里的 `countId`/`maxLimit`/`optimizeCountSql`/`optimizeJoinOfCountSql`/`searchCount`/`pages`/`orders` 等框架内部字段移除，保留业务字段（`records`/`total`/`size`/`current`），并用 `$simplified` 标记注明折叠了啥。
+6. **多服务支持**：扫 `input/` 下所有 `.json`；子目录形式 `input/<服务名>/openapi.json` 用目录名作服务名，平铺形式用文件名（自动去掉 `_OpenAPI`/`api-docs`/`swagger` 等后缀）。
+7. **索引从数据推导**：接口按 spec 自带 `tags` 分组；Schema 一览按「引用该 schema 的接口的 tag」派生分组（引用次数最多的 tag），无接口引用的归「未在接口中引用」——不依赖任何业务知识写死。
+8. **全量重跑**：每次清空 `output/` 重建，不做增量（开发辅助工具，全量也就十几秒，不值得引入状态管理）。
 
 ## 关键设计决策
 
@@ -91,6 +94,7 @@ api-spec/
 | 输入格式     | OpenAPI json（非 Knife4j 导出的 md）                | md 丢 `required`/`format`/`minLength` 等约束，且不可程序化解析；json 是源 |
 | 切片结构     | paths + schemas 双维度 + 内联 `$ref`                | 单维度拆 path 时 schema 还是坨大的；内联消除跨文件追引用                  |
 | 分组依据     | tag 派生（非硬编码业务前缀）                        | 分组从数据推导，任何项目可用；业务知识变化不需要改脚本                    |
+| 网关前缀     | `x-context-path` 元数据随 input 落盘（非改写 paths / sidecar） | input 保持后端原样，后端改前缀 diff 只动一行；单文件自包含不失同步        |
 | spec 变更    | 切片永远用新版（不做漂移检测）                      | 漂移检测是后续开发的事，本工具不越界                                      |
 | 脚本来源     | 零依赖手写（非 redocly）                            | 探查后 0 external $ref / 0 allOf，复杂结构不存在，redocly 是过度设计      |
 | 产物归属     | gitignore（output 目录级 `.gitignore`）             | 产物是运行时索引，不进库；目录级规则封装内聚                              |
@@ -112,6 +116,7 @@ api-spec/
 | 想改什么                | 改哪里                                                                   |
 | ----------------------- | ------------------------------------------------------------------------ |
 | 加新的噪音端点前缀      | `config.json` 的 `noisyPrefixes`（追加，内置已生效）                     |
+| 手动 json 补网关前缀    | `config.json` 的 `contextPaths`（`{ "服务名": "/前缀" }`）               |
 | 改服务名提取规则        | `scripts/gen-spec.mjs` 的 `collectInputs()`                              |
 | 改产物目录布局          | `scripts/gen-spec.mjs` 的 `writeServiceOutput()` / `buildServiceIndex()` |
 | 改折叠的 IPage 字段     | `scripts/gen-spec.mjs` 的 `IPAGE_NOISE` 常量                             |

@@ -2,8 +2,10 @@
 // 零依赖（Node 18+ 全局 fetch）。
 //
 // 原理：Knife4j 聚合 UI（doc.html）的数据源是两个可直接 GET 的端点——
-//   {base}/v3/api-docs/swagger-config   → 服务清单（name + 每个服务的 api-docs 地址）
-//   {base}<url>                         → 该服务的 OpenAPI json（无需登录）
+//   {base}/v3/api-docs/swagger-config   → 服务清单（name + url + contextPath 网关前缀）
+//   {base}<url>                         → 该服务的 OpenAPI json（无需登录；paths 不含 contextPath）
+// 下载后把 contextPath 以顶层扩展字段 x-context-path 随 json 落盘（字段缺失时从 url 推导），
+// gen-spec.mjs 切片时据此拼出前端真实调用的全路径；推导为空（网关根服务）则不写字段。
 //
 // 网关地址（base）解析优先级：
 //   1. --base=URL 命令行参数
@@ -125,9 +127,20 @@ if (!services.length) {
   process.exit(1)
 }
 
+// contextPath 解析：swagger-config 的 contextPath 字段优先，缺失时从 url 推导
+// （/investment/v3/api-docs → /investment；/v3/api-docs → ''，即网关根服务）
+const contextPathOf = (s) => {
+  const raw =
+    typeof s.contextPath === 'string' && s.contextPath
+      ? s.contextPath
+      : ((s.url || '').match(/^(\/.*?)\/?v3\/api-docs\/?$/) || ['', ''])[1]
+  return raw.replace(/\/+$/, '')
+}
+
 if (flag('list')) {
   console.log('\n网关上的服务：')
-  for (const s of services) console.log(`  - ${s.name}  (${s.url})`)
+  for (const s of services)
+    console.log(`  - ${s.name}  (${s.url})  contextPath: ${contextPathOf(s) || '(无)'}`)
   process.exit(0)
 }
 
@@ -189,17 +202,20 @@ for (const s of targets) {
     if (!spec || typeof spec !== 'object' || !spec.paths || typeof spec.paths !== 'object') {
       throw new Error('响应不是有效的 OpenAPI json（缺少 paths）')
     }
+    const cp = contextPathOf(s)
+    const withMeta = cp ? { ...spec, 'x-context-path': cp } : spec
+    // 比较在注入 x-context-path 之后进行：旧版无该字段的 input 会判定为有变化而重写，前缀自动补齐
     if (
       fs.existsSync(file) &&
-      stableStringify(spec) === stableStringify(JSON.parse(fs.readFileSync(file, 'utf8')))
+      stableStringify(withMeta) === stableStringify(JSON.parse(fs.readFileSync(file, 'utf8')))
     ) {
       console.log(`[${s.name}] 无变化，跳过写入`)
       ok++
       continue
     }
-    fs.writeFileSync(file, JSON.stringify(spec, null, 2) + '\n', 'utf8')
+    fs.writeFileSync(file, JSON.stringify(withMeta, null, 2) + '\n', 'utf8')
     console.log(
-      `[${s.name}] 已保存 → ${path.relative(ROOT, file)}（paths: ${Object.keys(spec.paths).length}）`
+      `[${s.name}] 已保存 → ${path.relative(ROOT, file)}（paths: ${Object.keys(spec.paths).length}，contextPath: ${cp || '(无)'}）`
     )
     ok++
   } catch (e) {

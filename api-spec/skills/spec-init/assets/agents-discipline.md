@@ -17,4 +17,4 @@ api-spec/
 4. **若 `api-spec/output/` 不存在**：先跑 `{{CMD_GEN}}`（干净环境首次必跑）。
 5. **后端更新接口后**：跑 `{{CMD_PULL}}`（自动从开发环境网关拉最新 json 覆盖 `input/` 并重切片）；非该网关导出的 json 才手动覆盖后跑 `{{CMD_GEN}}`。
 
-切片已做的简化（无需重复处理）：`$ref` 已内联、`/actuator` 等噪音端点已过滤、4xx/5xx 响应已剔除（只剩 2xx）、MyBatis-Plus `IPage` 框架字段已折叠（见 `$simplified` 标记）。
+切片已做的简化（无需重复处理）：`$ref` 已内联、`/actuator` 等噪音端点已过滤、4xx/5xx 响应已剔除（只剩 2xx）、MyBatis-Plus `IPage` 框架字段已折叠（见 `$simplified` 标记）、path 已拼接网关 contextPath 前缀（切片里的 `path` 即前端真实调用路径，直接用，不要再拼前缀）。若服务 index.md 标注 `contextPath: 未知`，写接口调用代码前先与后端核对前缀。

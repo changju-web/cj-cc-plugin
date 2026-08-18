@@ -36,8 +36,8 @@ api-spec/                     — OpenAPI 切片基础设施插件（源：by-in
   .claude-plugin/
     plugin.json               — 插件元数据
   scripts/                     — 插件级共享脚本，init 时复制进目标项目 api-spec/scripts/
-    fetch-spec.mjs            — 网关拉取：config.json + env 自动探测（monorepo 扫 apps/*，单仓扫根目录）
-    gen-spec.mjs              — 切片：tag 派生 schema 分组（不写死业务前缀）+ config 噪音前缀追加
+    fetch-spec.mjs            — 网关拉取：config.json + env 自动探测（monorepo 扫 apps/*，单仓扫根目录）；contextPath 以 x-context-path 元数据随 json 落盘（缺失时从 url 推导）
+    gen-spec.mjs              — 切片：tag 派生 schema 分组（不写死业务前缀）+ config 噪音前缀追加；path 拼接网关 contextPath 为全路径（优先级 x-context-path > config.contextPaths > 标注未知）
   skills/
     spec-init/                 — 一次性初始化：搭目录 → 复制脚本 → 注入 scripts → 写 AGENTS.md 纪律段
       assets/                  — 模板资产（agents-discipline.md / README.md，占位符替换后落地）

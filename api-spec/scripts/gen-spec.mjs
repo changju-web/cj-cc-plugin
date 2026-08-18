@@ -4,6 +4,8 @@
 //
 // 可选配置 api-spec/config.json（只放覆盖项）：
 //   - noisyPrefixes: string[] — 追加噪音端点前缀（内置 /actuator 等已生效，无需重复写）
+//   - contextPaths: Record<string, string> — 手动下载的 json（无 x-context-path 元数据）的
+//     网关前缀映射，key 为服务名。优先级：input json 的 x-context-path > 本映射 > 无（标注未知）
 //
 // 用法：
 //   node api-spec/scripts/gen-spec.mjs                 # 默认读 input/
@@ -28,6 +30,10 @@ const NOISY_PREFIXES = [
   '/actuator', '/v3/api-docs', '/swagger-resources', '/swagger-ui', '/doc.html',
   ...(Array.isArray(config.noisyPrefixes) ? config.noisyPrefixes.map(String) : []),
 ];
+const CONTEXT_PATHS =
+  config.contextPaths && typeof config.contextPaths === 'object' && !Array.isArray(config.contextPaths)
+    ? config.contextPaths
+    : {};
 const METHODS = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'];
 
 // index.md 纪律文案里提示的命令，按 lockfile 探测包管理器（只影响文案，不影响行为）
@@ -158,6 +164,12 @@ const sanitize = (s) => s.replace(/^\//, '').replace(/\//g, '-').replace(/[{}]/g
 
 const processOne = (spec, serviceName) => {
   assertNoComplex(spec, serviceName);
+  // 网关前缀（contextPath）优先级：input json 顶层 x-context-path（fetch-spec 写入）>
+  // config.json 的 contextPaths 映射（手动下载兜底）> 无。拼接后切片 path 即前端真实调用的全路径。
+  const specCp = typeof spec['x-context-path'] === 'string' ? spec['x-context-path'].trim() : '';
+  const configCp = typeof CONTEXT_PATHS[serviceName] === 'string' ? CONTEXT_PATHS[serviceName].trim() : '';
+  const contextPath = (specCp || configCp).replace(/\/+$/, '');
+  const contextSource = specCp ? 'spec 元数据' : configCp ? 'config 映射' : '';
   const outPaths = [];
   const outSchemas = [];
   const pathMeta = [];
@@ -183,18 +195,20 @@ const processOne = (spec, serviceName) => {
       };
       collectRefs(item[m]);
     }
+    // 文件名保持服务内路径：产物目录已按服务分组，逐文件重复前缀是冗余
     const fileBase = sanitize(rawPath);
+    const fullPath = contextPath + rawPath;
     outPaths.push({
       file: `paths/${fileBase}.json`,
       content: JSON.stringify({
-        path: rawPath,
+        path: fullPath,
         operations: ops,
         ...(item.parameters ? { commonParameters: resolveRef(item.parameters, spec) } : {}),
       }, null, 2),
     });
     pathMeta.push({
       file: `paths/${fileBase}.json`,
-      path: rawPath,
+      path: fullPath,
       methods: Object.keys(ops),
       tags: [...tags],
       schemasUsed: [...schemasUsed].sort(),
@@ -209,7 +223,7 @@ const processOne = (spec, serviceName) => {
     });
   }
 
-  return { keptPaths, droppedPaths, outPaths, outSchemas, pathMeta };
+  return { keptPaths, droppedPaths, outPaths, outSchemas, pathMeta, contextPath, contextSource };
 };
 
 // ============ 6. 写一个服务的产物目录 ============
@@ -233,7 +247,7 @@ const writeServiceOutput = (serviceDir, processed) => {
 const UNUSED_GROUP = '未在接口中引用';
 
 const buildServiceIndex = (spec, serviceName, processed) => {
-  const { keptPaths, droppedPaths, pathMeta } = processed;
+  const { keptPaths, droppedPaths, pathMeta, contextPath, contextSource } = processed;
   const schemaCount = processed.outSchemas.length;
 
   const tagGroups = {};
@@ -300,6 +314,11 @@ const buildServiceIndex = (spec, serviceName, processed) => {
   md.push(`- title: \`${spec.info?.title || serviceName}\``);
   md.push(`- version: \`${spec.info?.version || '?'}\``);
   md.push(`- openapi: \`${spec.openapi || '?'}\``);
+  md.push(
+    contextSource
+      ? `- contextPath: \`${contextPath || '(根)'}\`（来源：${contextSource}，下表 path 已含该前缀，即前端真实调用路径）`
+      : `- contextPath: **未知**（input 无 x-context-path 且 config.json 未映射 contextPaths——下表 path 可能缺网关前缀，写接口调用代码前先核对）`
+  );
   md.push(`- 业务 paths: ${keptPaths}（已过滤噪音 ${droppedPaths} 个运维端点）`);
   md.push(`- schemas: ${schemaCount}`);
   md.push(`- 使用纪律: 按需 Read 对应 \`paths/*.json\` / \`schemas/*.json\`，不要整份灌入上下文。\n`);
@@ -338,10 +357,13 @@ const buildRootIndex = (services) => {
   md.push(`- 输入目录: \`api-spec/input/\`（往里面丢新的 json，重跑脚本即可，不用改代码）`);
   md.push(`- 产物目录: \`api-spec/output/\`（gitignore，运行时索引）\n`);
   md.push(`## 服务清单\n`);
-  md.push(`| 服务 | paths | schemas | index |`);
-  md.push(`| --- | --- | --- | --- |`);
+  md.push(`| 服务 | contextPath | paths | schemas | index |`);
+  md.push(`| --- | --- | --- | --- | --- |`);
   for (const s of services) {
-    md.push(`| ${s.serviceName} | ${s.keptPaths} | ${s.schemaCount} | \`${s.serviceName}/index.md\` |`);
+    const cpLabel = s.contextSource
+      ? `\`${s.contextPath || '(根)'}\``
+      : '**未知**';
+    md.push(`| ${s.serviceName} | ${cpLabel} | ${s.keptPaths} | ${s.schemaCount} | \`${s.serviceName}/index.md\` |`);
   }
   md.push('');
   md.push(`## Agent 使用纪律\n`);
@@ -373,7 +395,13 @@ for (const { serviceName, filePath } of inputs) {
   fs.writeFileSync(path.join(serviceDir, 'index.md'), buildServiceIndex(spec, serviceName, processed));
   console.log(`  [paths] kept=${processed.keptPaths} dropped(noise)=${processed.droppedPaths}`);
   console.log(`  [schemas] written=${processed.outSchemas.length}`);
-  services.push({ serviceName, keptPaths: processed.keptPaths, schemaCount: processed.outSchemas.length });
+  services.push({
+    serviceName,
+    keptPaths: processed.keptPaths,
+    schemaCount: processed.outSchemas.length,
+    contextPath: processed.contextPath,
+    contextSource: processed.contextSource,
+  });
 }
 
 fs.writeFileSync(path.join(OUT_DIR, 'index.md'), buildRootIndex(services));
