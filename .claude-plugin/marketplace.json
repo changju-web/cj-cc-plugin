@@ -32,7 +32,7 @@
     {
       "name": "api-spec",
       "source": "./api-spec",
-      "description": "OpenAPI 切片基础设施插件：spec-init 一键初始化 + spec-pull 拉取重切片引导，agent 按需 Read 切片识别接口"
+      "description": "OpenAPI 切片与模型生成插件：spec-init 一键初始化 + spec-pull 拉取重切片引导 + spec-to-model 切片转 @gx-web/core model，agent 按需 Read 切片识别接口"
     }
   ]
 }

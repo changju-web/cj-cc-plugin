@@ -32,7 +32,7 @@ ssd-workflow/                 — Spec-Driven Development 工作流编排插件�
     ssd-plan/                 — 阶段 2 HOW：→ superpowers:writing-plans
     ssd-apply/                — 阶段 3 执行：按 plan 实现 + 执行纪律路由
     ssd-archive/              — 阶段 4 归档：→ /opsx:archive
-api-spec/                     — OpenAPI 切片基础设施插件（源：by-investment-platform-frontend）
+api-spec/                     — OpenAPI 切片与模型生成插件（源：by-investment-platform-frontend）
   .claude-plugin/
     plugin.json               — 插件元数据
   scripts/                     — 插件级共享脚本，init 时复制进目标项目 api-spec/scripts/
@@ -42,12 +42,15 @@ api-spec/                     — OpenAPI 切片基础设施插件（源：by-in
     spec-init/                 — 一次性初始化：搭目录 → 复制脚本 → 注入 scripts → 写 AGENTS.md 纪律段
       assets/                  — 模板资产（agents-discipline.md / README.md，占位符替换后落地）
     spec-pull/                 — 后端更新后拉取/重切片引导（缺 api-spec/ 时路由回 spec-init）
+    spec-to-model/             — 切片 / 粘贴 OpenAPI → @gx-web/core class model（形态识别、类型语义还原、枚举抽取、三层增量合并；项目约定经 docs/api-spec.md 记忆文件适配）
+      references/              — 规则书（类型映射 / FieldName 清洗 / 枚举抽取 / 嵌套与分页 / 输入源选择 / 项目约定探测）
+      examples/                — 真机样本（约定探测过程、生成结果、格式对齐前后对照）
 ```
 
 ## Skill 文件职责分离
 
 - **SKILL.md**：只写"什么时候触发"和"生成流程/规则"，不内联 API 签名
-- **reference.md**：只写组件 Props、函数签名、类型定义、完整模板，不写触发逻辑
+- **reference.md / references/**：只写组件 Props、函数签名、类型定义、完整模板，不写触发逻辑。单篇用 `reference.md`，多篇规则书用 `references/` 目录（渐进披露）
 - **examples/**：提供可直接参考的落地代码
 
 ## 依赖关系
@@ -70,7 +73,7 @@ monorepo API 变更时，需要同步更新对应 skill 的 `reference.md`。
 
 1. 在 `<plugin>/skills/` 下创建以 skill 名称命名的目录（`kebab-case`）
 2. 必须包含 `SKILL.md`（frontmatter 含 `name` 和 `description`）
-3. 如果依赖外部库 API，在同级创建 `reference.md` 并在 `SKILL.md` 中引用
+3. 如果依赖外部库 API，在同级创建 `reference.md` 或 `references/` 目录并在 `SKILL.md` 中引用
 4. 提供至少一组 `examples/`；基础设施装配类 skill（无代码生成输出）不适用 examples/，模板资产放 `assets/`（占位符替换后落地）
 
 ## Agent skills

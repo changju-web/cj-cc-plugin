@@ -23,3 +23,9 @@ _Avoid_: 相对路径、裸路径
 contextPath 拼接服务内路径的结果，即前端发起请求时使用的真实 URL 路径，如 `/investment/enterprise/info/page`。
 
 _Avoid_: 完整地址（含 host 时才叫地址）
+
+**约定记忆文件（conventions memory file）**:
+
+spec-to-model 在目标项目里生成并维护的 `docs/api-spec.md`，记录该项目的 model/api 目录、命名、http 类型等生成约定；由探测 + 询问产出，允许人工编辑，下次运行以文件内容为准，删除即触发重新探测。
+
+_Avoid_: 配置文件（它是记忆不是配置）、缓存（进版本库、团队共享）
