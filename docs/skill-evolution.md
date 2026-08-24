@@ -1,0 +1,38 @@
+# Skill 市场自进化机制
+
+本仓库（cj-cc-marketplace）的 skill 通过「日常使用信号 → 闲时巡检 → 分支修正 → 人工审合」的闭环持续进化。
+
+## 闭环总览
+
+1. **信号采集**：日常开发会话中，agent 把与市场插件 skill 相关的坑、纠偏、复用规律写入所在项目的 ZCode memory（见下文采集约定）。
+2. **闲时巡检**：ZCode 自动化 `automation-ca4d5a2a`（每天 12:30）读取三层信号源，判定是否存在可落地的 skill 改进点。
+3. **分支修正**：有行动项时，巡检在本仓库 `skill-evolution/<日期>` 分支上修改 skill 并 commit，不 push。
+4. **人工审合**：用户审阅在途分支 diff 后自行合并回 main 并 push；在途进化分支最多保留一个。
+
+## 信号源（巡检读取顺序）
+
+| 层 | 位置 | 说明 |
+| --- | --- | --- |
+| 1. 记忆目录 | `~/.zcode/cli/memories/projects/*/memory/` | 最可靠的结构化信号，优先采信 |
+| 2. 对话库 | `~/.zcode/cli/db/db.sqlite`（只读） | 检索近 24h 含 skill 关键词或纠偏语气的消息；被权限拒绝时整层跳过 |
+| 3. 本仓库 git log | `git log --oneline -15` | 了解已回流规则，避免重复修改 |
+
+## 采集约定（给日常会话中的 agent）
+
+- 发现与市场插件 skill 相关的坑、用户纠偏、可复用规律时，写入当前项目的 memory（`type: feedback` 或 `project`）。
+- 正文或 description 中**点名插件与 skill**（如「wd-comp 的 wd-form-page」），这是巡检检索的锚点。
+- 记忆被沉淀进 skill 后不必删除，可在正文标注「已沉淀」，便于巡检去重。
+
+## 巡检自动化约定
+
+- 节奏：每天 12:30；产物：巡检日志落盘到 `.scratch/skill-evolution/<日期>.md`（已 gitignore，不进 git）。
+- 动作级别：仅在有明确、可落地的行动项时改动；单次改动不超过 3 个文件，最小必要修改。
+- 分支：从 main 新建 `skill-evolution/<日期>`；已有在途进化分支则在其上追加，最多一个在途。
+- 工作区不干净（用户有未提交改动）时本次只记录不改动。
+
+## 禁区（巡检自动化不可触碰）
+
+- 不 push、不修改 main、不操作 `worktree-agent-*` 与 `feature/*` 既有分支。
+- 不创建 / 修改 / 删除任何自动化。
+- 不修改 ZCode 配置或 memory 文件。
+- 巡检日志不进 git。
