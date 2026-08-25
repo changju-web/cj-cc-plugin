@@ -170,3 +170,18 @@ export const VehicleFocusApi = createVehicleFocusApi(request)
 - **spec-pull**（本插件）：后端更新切片后，先重切片，再用本 skill 增量同步 api（三层保旧）
 - **wd-comp / ep-comp**（本市场插件）：页面生成 skill，消费本 skill 产出的 api 工厂 + model
 - **api-spec 识别纪律**：见项目 `AGENTS.md` 的 api-spec 识别纪律段（由 spec-init skill 初始化时注入）。本 skill 默认输入就是 `api-spec/output/` 切片
+
+## 反馈捕获（生成会话收尾，不阻塞交付）
+
+本会话中用户对产物**显式纠偏**（指出不对 + 给改法）、**主动要求**（期望效果，非纠错）或**要求重生成**时，交付前完成落账：
+
+1. 可泛化的纠偏/要求 → 提炼成一行规则，增量写入本项目 `docs/api-spec.md` 对应条目（只写规则语句，不记原话；机制同上文「读项目约定」）
+2. 往 `docs/codegen-ledger.md`（无则创建，进 git）追加一行：
+
+   ```text
+   - [YYYY-MM-DD] api-spec:spec-to-api | <纠偏|要求|重生成> | <用户原话摘录> | <当时的处理> | <涉及产物路径>
+   ```
+
+3. 主动要求类**双写**（约定文件 + 台账各一条）；纯纠偏至少记台账
+
+只记本会话内显式信号，闲聊与推测不入账。台账供市场蒸馏巡检（skill-evolution:inspect）消费，原文不改写，行尾处理标记由巡检追加。

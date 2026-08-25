@@ -24,12 +24,6 @@ contextPath 拼接服务内路径的结果，即前端发起请求时使用的�
 
 _Avoid_: 完整地址（含 host 时才叫地址）
 
-**约定记忆文件（conventions memory file）**:
-
-spec-to-model / spec-to-api 在目标项目里生成并维护的 `docs/api-spec.md`，记录该项目的 model/api 目录、命名、http 类型、app 注入点等生成约定；由探测 + 询问产出，允许人工编辑，下次运行以文件内容为准，删除即触发重新探测。
-
-_Avoid_: 配置文件（它是记忆不是配置）、缓存（进版本库、团队共享）
-
 **api 工厂（api factory）**:
 
 share 层的 `createXxxApi(request)` 工厂函数，接收注入的 request 实例、返回该实体的方法集，使 api 定义与各 app 的 axios 配置解耦。是 spec-to-api 的 share 层产物。
@@ -41,3 +35,37 @@ _Avoid_: api 类、api 服务（没有实例化语义）
 app 内约 6 行的实例化文件：从 share 包导入 api 工厂、注入本 app 的 request、默认导出实例。每个 app 一份，request 注入点各不相同。
 
 _Avoid_: 包装器（它是纯实例化，无包装逻辑）
+
+### skill-evolution 插件
+
+**生成信号台账（codegen ledger）**:
+
+消费项目 `docs/codegen-ledger.md`，生成会话中用户显式纠偏 / 主动要求 / 要求重生成时逐条追加的信号记录（点名插件与 skill、类型、原话摘录、处理方式、涉及产物）；进项目 git，纯追加，原文不可改写，行尾处理标记由巡检追加。
+
+_Avoid_: 日志（它是证据台账，不是运行日志）、反馈文件（丢了逐条可追踪的含义）
+
+**巡检（inspect）**:
+
+skill-evolution 插件的手动蒸馏动作：读注册表内各项目台账的未处理信号 → 归因分层 → 同规则点复现 ≥2 才升格市场行动项 → 在途进化分支改 skill 并 commit（不 push）。merge / push / bump 属于人工。
+
+_Avoid_: 自动巡检（v1 无自动化）、扫描（不考古会话，台账是唯一输入）
+
+**行动项（action item）**:
+
+巡检产出的最小改动单元，四分类：冲突改 / 缺失增 / 冗余删 / 样本进 examples；每个行动项必须带归因层与 ≥2 条证据。
+
+_Avoid_: 待办（它是蒸馏结论，不是任务清单）
+
+**在途进化分支（in-flight evolution branch）**:
+
+市场仓库 `skill-evolution/<日期>` 分支，巡检改动的落点；最多同时存在一个，人工审合 merge 后消失，merge 时 bump 涉事插件版本。
+
+_Avoid_: 进化分支（丢了"未审合"的状态语义）
+
+### 跨插件
+
+**约定记忆文件（conventions memory file）**:
+
+生成 skill 在目标项目里生成并维护的记忆文件——api/model 层 `docs/api-spec.md`、UI 生成层 `docs/ui-codegen.md`（内分共通 / PC / 小程序三节）；记录该项目各生成层的目录、命名、形态等约定，由探测 + 询问产出，允许人工编辑，下次运行以文件内容为准，删除即触发重新探测。
+
+_Avoid_: 配置文件（它是记忆不是配置）、缓存（进版本库、团队共享）

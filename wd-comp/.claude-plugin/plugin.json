@@ -1,7 +1,7 @@
 {
   "name": "wd-comp",
   "description": "基于 mini-program、Wot UI、@gx-web/core 和 @gx-web/tool 的业务代码生成插件",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": "https://github.com/changju-web/cj-cc-marketplace",
   "author": {
     "name": "wangjiahui",

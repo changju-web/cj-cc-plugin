@@ -31,6 +31,14 @@ description: "Generate mini-program Wot UI submit form pages for apps/mini-progr
 2. `../../references/mini-program.md`
 3. `./reference.md`
 
+## Project Conventions（docs/ui-codegen.md，每次运行最先读）
+
+产出位置、model/api 引用形态、字典与上传组件用法偏好是每项目不同的工程约定，不能写死：
+
+1. 读 `docs/ui-codegen.md`：存在 → 用「共通」与「小程序 (wd-comp)」小节的约定；缺项 → 只探测补缺
+2. 不存在 → 探测小程序端存量页面归纳初始约定（目录 / 命名 / import 形态 / 组件用法），低置信项用 AskUserQuestion 确认，**人工确认后**才落盘
+3. 人工编辑优先于探测结论；冲突以文件为准；删除文件触发重新探测
+
 ## Form Contract
 
 - 表单 model 使用 `class + @ClassName + @FieldName`
@@ -67,10 +75,26 @@ description: "Generate mini-program Wot UI submit form pages for apps/mini-progr
 
 一次成功输出至少满足：
 
+- 项目约定已读取，或本次完成探测 + 确认落盘（`docs/ui-codegen.md`）
 - 表单 model 使用 `@gx-web/core`。
 - 表单状态使用 `useStateRef`。
 - loading 使用 `useToggle`。
 - 表单校验使用 `wd-form + zodAdapter + FormInstance`，除非已有模块采用其他稳定模式。
 - 提交错误使用 `useNotify().reqError(error)` 或项目既有错误处理。
 - 不引入 uView、Vuex、Vue 2 class component 或旧全局 `$xxx` 方法。
+
+## 反馈捕获（生成会话收尾，不阻塞交付）
+
+本会话中用户对产物**显式纠偏**（指出不对 + 给改法）、**主动要求**（期望效果，非纠错）或**要求重生成**时，交付前完成落账：
+
+1. 可泛化的纠偏/要求 → 提炼成一行规则，增量写入本项目 `docs/ui-codegen.md` 对应小节（只写规则语句，不记原话；机制同上文「Project Conventions」）
+2. 往 `docs/codegen-ledger.md`（无则创建，进 git）追加一行：
+
+   ```text
+   - [YYYY-MM-DD] wd-comp:wd-form-page | <纠偏|要求|重生成> | <用户原话摘录> | <当时的处理> | <涉及产物路径>
+   ```
+
+3. 主动要求类**双写**（约定文件 + 台账各一条）；纯纠偏至少记台账
+
+只记本会话内显式信号，闲聊与推测不入账。台账供市场蒸馏巡检（skill-evolution:inspect）消费，原文不改写，行尾处理标记由巡检追加。
 

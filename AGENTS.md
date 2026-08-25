@@ -48,6 +48,12 @@ api-spec/                     — OpenAPI 切片与代码生成插件（拉取 �
     spec-to-api/               — 切片 → 共享包 api 工厂 + app 层薄壳（按实体聚合、方法名尾段+动词映射按存量校准、schema 回链 model、分页 4 组合、http 类型与 api 同包统一落位、用户意图优先于存量多数派、三层保旧、不编造 spec 外默认值）
       references/              — 规则书（实体聚合 / 方法命名 / 请求形态 / 类型回链 / api 侧项目约定探测）
       examples/                — 真机样本（enterprise-info 全量生成、约定探测过程、无 model 兜底降级、分页参数 4 组合对照、xbwisdom biz 工厂 + 双 app 薄壳、页面级 api 迁移改造）
+skill-evolution/              — 市场自进化蒸馏插件（慢环）：手动巡检消费项目 codegen ledger，详见 docs/skill-evolution.md
+  .claude-plugin/
+    plugin.json               — 插件元数据
+  skills/
+    inspect/                  — 蒸馏巡检：读注册表内各项目 ledger → 归因分层 + 复现 ≥2 门槛 → 四分类行动项 → 在途分支改 skill（不 push）
+      references/             — consumers.md 消费项目注册表 / signals-and-thresholds 信号与门槛 / modify-discipline 修改纪律与禁区
 ```
 
 ## Skill 文件职责分离

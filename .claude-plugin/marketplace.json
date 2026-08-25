@@ -33,6 +33,11 @@
       "name": "api-spec",
       "source": "./api-spec",
       "description": "OpenAPI 切片与代码生成插件：spec-init 一键初始化 + spec-pull 拉取重切片引导 + spec-to-model 切片转 @gx-web/core model + spec-to-api 切片转 api 工厂（model 回链 + app 薄壳），agent 按需 Read 切片识别接口"
+    },
+    {
+      "name": "skill-evolution",
+      "source": "./skill-evolution",
+      "description": "市场自进化蒸馏插件（慢环）：inspect 手动巡检各消费项目 codegen ledger，归因分层 + 复现门槛过滤后产出四分类行动项，在途分支修改 skill（不 push），审合与 bump 属于人工"
     }
   ]
 }
