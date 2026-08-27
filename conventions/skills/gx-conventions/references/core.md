@@ -69,6 +69,27 @@ export type EquipmentDoorState = ValueOf<typeof EquipmentDoorState>
 
 **空值显式类型化，不用 `?:` 表达空**：字段"存在但为空"用显式空值纳入联合类型（`bindingState!: 1 | 0 | ''`），而不是标 `?:`。这样"不传"（键省略）与"传空"（显式空值）语义可区分——SearchModel 区分「不过滤」与「筛选空」，FormModel 区分「不改字段」与「清空字段」。
 
+## 复杂类型默认值
+
+数组 / Record / 字典 / 嵌套 model 集合字段：**类属性初始化器给空容器默认值，取代 `!:`**：
+
+```ts
+/** 子列表 */
+@FieldName('子列表')
+children: OpenAccessGroupEquipmentChildModel[] = []
+
+/** 权限组门禁设备（地址ID → 设备ID） */
+@FieldName('权限组门禁设备')
+equipmentIdMap: Record<string, string> = {}
+```
+
+- 比断言语义更强的保证：`!:` 是「相信我必有值」，初始化器是「构造时必有值」，编译器与运行时双重认可，类型不含 undefined，消费端免判空
+- `getModelFromJson` 内建默认值机制（`Object.assign(instance, defaultFieldMap, json)`）：后端有值覆盖、缺字段保默认值，`row.children.map()` 永不崩；初始化器每次实例化独立求值，`= []` 无引用共享
+- 前端初始态免手工拼装：`useStateRef(() => new XxxFormModel())` 直接可用
+- 范围：仅集合类复杂类型；标量维持断言语义（复杂类型方法调用会崩，标量读到 undefined 不崩）；单值嵌套对象（`detail!: ChildModel`）暂不定策略，见待补
+
+真机样本：`open-access-group.ts` 的 `children` / `equipmentList` / `equipmentIdMap`（存量未带默认值，渐进改造）。
+
 ## model 分层
 
 同一实体按用途分四层，同文件内从上到下：枚举三件套 → Entity → TableModel → FormModel → SearchModel。
@@ -129,4 +150,4 @@ const detail = getModelFromJson(res.data, EquipmentTableModel)
 ## 待库作者补充
 
 - [ ] class 内方法 / getter 的推荐写法与禁忌
-- [ ] 嵌套 model（字段类型为另一 model class）的手写规范
+- [ ] 单值嵌套对象（字段类型为另一 model class，非集合）的默认值策略
