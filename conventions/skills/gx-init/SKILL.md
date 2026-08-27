@@ -28,7 +28,7 @@ description: "One-time setup for business projects using the gx-web library. Inj
 ```md
 ## gx-web 库约定
 
-使用 @gx-web/*（core / tool / ep-comp / biz / share）相关能力时，先调用 `gx-conventions` skill 阅读对应小节约定（core / tool / ep-comp / common 四篇），严格遵循；生成任务（表格页、表单弹窗、model / api 生成等）仍按各生成 skill 流程执行。
+使用 gx-web 库（`../gx-web-lib`，含 @gx-web/core、@gx-web/tool、@gx-web/ep-comp）相关能力时，先调用 `gx-conventions` skill 阅读对应小节约定（core / tool / ep-comp / common 四篇），严格遵循；生成任务（表格页、表单弹窗、model / api 生成等）仍按各生成 skill 流程执行。注意：@gx-web/biz、@gx-web/share 等是消费项目内私有包，不在库约定范围。
 ```
 
 ## 边界与收尾

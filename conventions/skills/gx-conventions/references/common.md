@@ -77,5 +77,4 @@ export function useSettingStoreHook() {
 
 ## 待库作者补充
 
-- [ ] 共享包（@gx-web/share / biz）的跨端引用约定
 - [ ] 样式 / UnoCSS 类的使用边界（如适用）
