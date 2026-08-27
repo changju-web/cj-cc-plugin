@@ -32,16 +32,33 @@ const [visible, setVisible] = useToggle()
 
 ## useTablePage —— 分页表格数据链路
 
-列表页 / 查询页的分页加载默认用 `useTablePage`，与 `GxSearch` + `GxPaginationTable` 构成主链路：
+列表页 / 查询页的分页加载默认用 `useTablePage`，与 `GxSearch` + `GxPaginationTable` 构成主链路。签名：数组解构 `[list, 控制器]`，入参为回调式 loader（真机：`system/user/index.vue`）：
 
 ```ts
 import { useTablePage } from '@gx-web/tool'
 
-const { tableData, pagination, loadPage, loading } = useTablePage(api)
+const [list, { page, loading, setLoading, loadList, reloadList, onChange }] = useTablePage(
+  ({ current, size }) =>
+    User.page({ ...form.value, pageNum: current, pageSize: size }).then(({ data }) => ({
+      records: data.records,
+      total: data.total
+    }))
+)
 ```
 
-- 完整页面骨架生成走 `ep-comp:table-page`，本篇只定选择依据：有分页表格即用，不手写 `pageNum/pageSize` 状态与请求拼装
-- 返回值解构以 ep-comp:table-page 的 reference 为准，此处不复制签名（约定唯一归属）
+- loader 接收 `{ current, size }`，返回归一为 `{ records, total }`——不手写 `pageNum` / `pageSize` 状态与请求拼装
+- `loadList` 带当前查询条件查询，`reloadList` 重置到第一页重查，`onChange` 接 GxPaginationTable 的 `@pagination`
+- 完整页面骨架生成走 `ep-comp:table-page`
+
+## 其余 hooks（真机实证）
+
+| Hook | 场景 | 要点 |
+| --- | --- | --- |
+| `useLoadList` | 非分页列表加载（详情页关联数据等） | `const [list, { reloadList }] = useLoadList(loader)` |
+| `useLoadMap` | 单对象加载（详情数据） | `const [detail, { load, loading, resetData }] = useLoadMap(loader)` |
+| `useFormDirtyTracker` | 编辑表单字段级脏检查 | `const { isFieldDirty, resetToInitial, updateInitial } = useFormDirtyTracker(form)`，配合「仅提交改动字段」的编辑场景 |
+
+实证样本：`apps/web/src/views/system/user/`（index.vue + components/add.vue）。
 
 ## 选用速查
 
@@ -50,8 +67,11 @@ const { tableData, pagination, loadPage, loading } = useTablePage(api)
 | 对象型状态（表单 / 筛选） | `useStateRef` |
 | 布尔开关（显隐 / 折叠） | `useToggle` |
 | 分页表格数据 | `useTablePage` |
+| 非分页列表 | `useLoadList` |
+| 单对象详情 | `useLoadMap` |
+| 表单脏检查 | `useFormDirtyTracker` |
 
 ## 待库作者补充
 
-- [ ] `@gx-web/tool` 其余 hooks 清单及各自适用场景（逐个一行说明即可）
+- [ ] `@gx-web/tool` 其余未实证 hooks 清单（逐个一行场景说明）
 - [ ] hooks 组合的推荐次序（如同页同时用 useTablePage + useStateRef 时的结构）

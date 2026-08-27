@@ -35,6 +35,7 @@ description: "gx-web library usage conventions (convention-type knowledge, not a
 4. **响应式状态用 hooks**：组件状态对象用 `useStateRef`、布尔开关用 `useToggle`，不裸用 `ref({})` 再手写 reset（tool.md）
 5. **`@FieldName` 是 UI 文案唯一来源**：表头 / label / placeholder 从装饰器取，同 class 内不得重复（core.md）
 6. **model 纯字段**：model class 只写字段 + 装饰器（`@FieldName` / `@ClassName` / `@Default`），不放方法 / getter，派生逻辑归组件层；`BaseModel` / `BaseEntity` 为旧版遗弃，不继承（core.md）
+7. **插槽名 kebab-case**：字段 `parkId` 的插槽是 `#form-item-park-id`，写 `#form-item-parkId` 无效；`#form-item-*` 仅在 type 无法解决（多字段绑定 / 组件 ref）时使用（ep-comp.md）
 
 ## 与其他载体的边界
 
