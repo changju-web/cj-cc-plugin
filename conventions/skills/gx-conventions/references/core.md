@@ -8,7 +8,7 @@
 
 - 业务实体用 `class` 而非 `interface`：装饰器元数据与方法依赖 class 才能保留
 - class 上方写中文注释 + `@ClassName('中文名')` 装饰器；**每个字段上方必写 `/** 中文说明 */` 注释**
-- 字段断言按层分（见「model 分层」）：Entity 响应层全 `!:`；FormModel / SearchModel 按请求语义，必传 `!:`、可选 `?:`
+- 字段断言 `!:` / `?:` 逐字段按契约语义判定（见「断言语义」），不按层一刀切
 
 ```ts
 import { ClassName, FieldName } from '@gx-web/core'
@@ -59,16 +59,26 @@ export type EquipmentDoorState = ValueOf<typeof EquipmentDoorState>
 - 数字枚举直接写值；字符串枚举 key 与 value 同词（`local: 'local'`）
 - 不用 TS `enum`
 
+## 断言语义（`!:` / `?:`）
+
+统一规则：**`!:` = 必有键，`?:` = 可整体省略**。判定准绳：消费者拿到实例后能否不判空直接用（Entity 对后端响应），或提交时是否必带该键（FormModel / SearchModel 对请求契约）。
+
+- **Entity**：`!:` = 后端必返；条件性返回的字段（扩展字段、依赖状态的字段）用 `?:`
+- **FormModel**：`!:` = 提交必传；`?:` = 可不传（"仅新增请求"、"编辑不传不修改"）
+- **SearchModel**：`?:` = 不传即不过滤；必填查询条件（如分页参数）用 `!:`
+
+**空值显式类型化，不用 `?:` 表达空**：字段"存在但为空"用显式空值纳入联合类型（`bindingState!: 1 | 0 | ''`），而不是标 `?:`。这样"不传"（键省略）与"传空"（显式空值）语义可区分——SearchModel 区分「不过滤」与「筛选空」，FormModel 区分「不改字段」与「清空字段」。
+
 ## model 分层
 
 同一实体按用途分四层，同文件内从上到下：枚举三件套 → Entity → TableModel → FormModel → SearchModel。
 
-| 层 | 形态 | 断言语义 |
+| 层 | 形态 | 断言常见分布（规则见「断言语义」） |
 | --- | --- | --- |
-| `XxxEntity` | 后端实体全字段，`@ClassName` 标注 | 全 `!:` |
+| `XxxEntity` | 后端实体全字段，`@ClassName` 标注 | 多为 `!:`（必返） |
 | `XxxTableModel` | `extends XxxEntity {}` 空继承，列表项 | 随 Entity |
-| `XxxFormModel` | 新增 / 编辑表单字段 | 必传 `!:`、可选 `?:` 按请求语义 |
-| `XxxSearchModel` | 查询条件字段 | 通常 `?:` |
+| `XxxFormModel` | 新增 / 编辑表单字段 | 必传 `!:`、可省 `?:` |
+| `XxxSearchModel` | 查询条件字段 | 多为 `?:`（可选筛选） |
 
 ```ts
 /** 企业门禁设备列表项 */
