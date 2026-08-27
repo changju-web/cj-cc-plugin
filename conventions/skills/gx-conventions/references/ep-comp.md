@@ -61,17 +61,19 @@ GX 系组件（GxForm / GXSearch 等）的 modelValue 由组件统一处理，**
 ### GxPaginationTable
 
 ```vue
-<GxPaginationTable
-  v-model:page="page.current"
-  v-model:limit="page.size"
-  :columns="columns"
-  :data="list"
-  :loading="loading"
-  :total="page.total"
-  :table-props="{ selection: true, actionWidth: 300 }"
-  @pagination="onChange"
-  @selection-change="setSelectionRows"
->
+<template>
+  <GxPaginationTable
+    v-model:page="page.current"
+    v-model:limit="page.size"
+    :columns="columns"
+    :data="list"
+    :loading="loading"
+    :total="page.total"
+    :table-props="{ selection: true, actionWidth: 300 }"
+    @pagination="onChange"
+    @selection-change="setSelectionRows"
+  />
+</template>
 ```
 
 - `page` / `onChange` / `loading` / `list` 来自 `useTablePage`（见 tool.md）；`table-props` 透传表格配置（勾选列、操作列宽）
@@ -80,27 +82,31 @@ GX 系组件（GxForm / GXSearch 等）的 modelValue 由组件统一处理，**
 ### GxSearch（查询区）
 
 ```vue
-<GxSearch v-model="form" :items="searchItems" @submit="loadList" @reset="handleReset" />
+<template>
+  <GxSearch v-model="form" :items="searchItems" @submit="loadList" @reset="handleReset" />
+</template>
 ```
 
 ### GxDialog + GxForm（弹窗表单）
 
 ```vue
-<GxDialog v-model="visible" :title="dialogTitle" width="700px" @closed="close">
-  <GxForm
-    ref="FormRef"
-    v-model="form"
-    v-loading="loading"
-    :items="formItems"
-    :rules="rules"
-    :row="{ gutter: 20 }"
-    label-width="90px"
-    show-reset
-    @cancel="setVisible(false)"
-    @reset="handleReset"
-    @submit="handleSubmit"
-  />
-</GxDialog>
+<template>
+  <GxDialog v-model="visible" :title="dialogTitle" width="700px" @closed="close">
+    <GxForm
+      ref="FormRef"
+      v-model="form"
+      v-loading="loading"
+      :items="formItems"
+      :rules="rules"
+      :row="{ gutter: 20 }"
+      label-width="90px"
+      show-reset
+      @cancel="setVisible(false)"
+      @reset="handleReset"
+      @submit="handleSubmit"
+    />
+  </GxDialog>
+</template>
 ```
 
 弹窗组件固定模式（add.vue）：
