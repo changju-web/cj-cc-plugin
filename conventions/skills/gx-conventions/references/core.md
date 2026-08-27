@@ -148,10 +148,10 @@ const [form, setForm, resetForm] = useStateRef(() => getModelFromJson(EquipmentF
 - 禁止 `Object.assign(new Model(), json)` / 展开复制——丢装饰器元数据，UI 文案链路失效
 - 与「复杂类型默认值」配合：初始态工厂自动带上 `= []` / `= {}` 默认值，免手工拼容器
 
-## DetailModel
+## 详情 model（命名模式，非库基类）
 
-- 只读详情展示的 model 继承库内 `DetailModel` 基类，配合 `GXDescriptions` / 详情弹窗使用
-- 展示字段必须有 `@FieldName`，否则需在配置中手动提供 `label`
+- 只读详情弹窗的 model 命名 `XxxDetailModel`（如 `AlarmDetailModel`），就是普通 model class + `@FieldName`，配合 ep-comp 的 `generateDescriptionsItems` 使用——库内**没有**名为 DetailModel 的导出基类
+- 细则与生成流程见 `ep-comp:detail-dialog`
 
 ## 待库作者补充
 

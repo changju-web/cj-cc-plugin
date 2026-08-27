@@ -48,7 +48,7 @@ GX 系组件（GxForm / GXSearch 等）的 modelValue 由组件统一处理，sc
 
 - 列表页 / 表格底座 → `ep-comp:table-page`
 - 新增 / 编辑 / 审批表单弹窗 → `ep-comp:form-dialog`
-- 只读详情弹窗 → `ep-comp:detail-dialog`
+- 只读详情弹窗 → `ep-comp:detail-dialog`（model 命名 `XxxDetailModel`，普通 class + `@FieldName`，库内无 DetailModel 基类）
 - 本篇约定在生成产物上同样生效（生成 skill 引用本文，不复制）
 
 ## 待库作者补充
