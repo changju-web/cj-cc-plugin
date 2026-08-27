@@ -54,6 +54,12 @@ skill-evolution/              — 市场自进化蒸馏插件（慢环）：手�
   skills/
     inspect/                  — 蒸馏巡检：读注册表内各项目 ledger → 归因分层 + 复现 ≥2 门槛 → 四分类行动项 → 在途分支改 skill（不 push）
       references/             — consumers.md 消费项目注册表 / signals-and-thresholds 信号与门槛 / modify-discipline 修改纪律与禁区
+gx-conventions/               — gx-web 库约定型用法插件（版本化约定载体，AGENTS.md 指针调用，见 docs/adr/0001）
+  .claude-plugin/
+    plugin.json               — 插件元数据
+  skills/
+    gx-conventions/           — 约定规范薄壳：定位声明 + 索引 + 红线
+      references/             — core.md / tool.md / ep-comp.md / common.md 四篇约定（约定唯一权威源，生成 skill 不复制）
 ```
 
 ## Skill 文件职责分离

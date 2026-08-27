@@ -38,6 +38,11 @@
       "name": "skill-evolution",
       "source": "./skill-evolution",
       "description": "市场自进化蒸馏插件（慢环）：inspect 手动巡检各消费项目 codegen ledger，归因分层 + 复现门槛过滤后产出四分类行动项，在途分支修改 skill（不 push），审合与 bump 属于人工"
+    },
+    {
+      "name": "gx-conventions",
+      "source": "./gx-conventions",
+      "description": "gx-web 库约定型用法规范插件（core / tool / ep-comp / 团队 Vue 约定）：版本化约定载体，由 AGENTS.md 指针调用，改一处全项目升级生效"
     }
   ]
 }

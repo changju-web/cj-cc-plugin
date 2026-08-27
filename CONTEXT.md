@@ -62,7 +62,39 @@ _Avoid_: 待办（它是蒸馏结论，不是任务清单）
 
 _Avoid_: 进化分支（丢了"未审合"的状态语义）
 
+### gx-conventions 插件
+
+**指针调用（pointer invocation）**:
+
+AGENTS.md 以指令形式引用 skill 短名（如「涉及 @gx-web/* 先调 gx-conventions」）的加载方式，触发可靠性接近无条件注入，用于约定型 skill；区别于 description 语义触发。
+
+_Avoid_: 自动加载（无自动含义）、注入（易与上下文注入混淆）
+
+**库官方规范（library conventions）**:
+
+gx-web 库层面跨项目通用的约定，唯一权威源在 gx-conventions 插件，跟插件版本分发、不向消费项目落副本；区别于装项目个性的约定记忆文件。
+
+_Avoid_: 全局规范（无版本语义）、团队规范（丢失"跟库走"的归属）
+
 ### 跨插件
+
+**约定型知识（convention knowledge）**:
+
+无任务意图、写相关代码任何时候都须遵守的用法规范（hooks 选择、装饰器写法、声明式优先），载体为 gx-conventions 插件，靠指针调用；语义触发不可靠是其与生成型知识的分界。
+
+_Avoid_: 规范类 skill（易误解为生成器）
+
+**生成型知识（generation knowledge）**:
+
+特定任务（表格页、表单弹窗、model / api 生成）的组合链路知识，内嵌于各生成 skill 的 reference 与流程，靠 description 语义触发。
+
+_Avoid_: 无
+
+**项目个性约定（project-specific conventions）**:
+
+单个消费项目特有的封装与规则（字典组件族、注册表、校验命令），装在该项目约定记忆文件内，由快环探测与回写维护；禁止升格进市场 skill。
+
+_Avoid_: 项目规范（与库官方规范混淆）
 
 **约定记忆文件（conventions memory file）**:
 
