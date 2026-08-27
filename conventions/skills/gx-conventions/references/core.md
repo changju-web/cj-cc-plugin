@@ -9,6 +9,8 @@
 - 业务实体用 `class` 而非 `interface`：装饰器元数据与方法依赖 class 才能保留
 - class 上方写中文注释 + `@ClassName('中文名')` 装饰器；**每个字段上方必写 `/** 中文说明 */` 注释**
 - 字段断言 `!:` / `?:` 逐字段按契约语义判定（见「断言语义」），不按层一刀切
+- **model 只写字段 + 装饰器**：不放方法 / getter / 行为；派生展示逻辑（合并字段、派生布尔）放组件层
+- `BaseModel` / `BaseEntity` 为旧版遗弃基类，新 model 不继承（其实例化能力由独立函数 `getModelFromJson` 承担）
 
 ```ts
 import { ClassName, FieldName } from '@gx-web/core'
@@ -86,7 +88,23 @@ equipmentIdMap: Record<string, string> = {}
 - 比断言语义更强的保证：`!:` 是「相信我必有值」，初始化器是「构造时必有值」，编译器与运行时双重认可，类型不含 undefined，消费端免判空
 - `getModelFromJson` 内建默认值机制（`Object.assign(instance, defaultFieldMap, json)`）：后端有值覆盖、缺字段保默认值，`row.children.map()` 永不崩；初始化器每次实例化独立求值，`= []` 无引用共享
 - 前端初始态免手工拼装：`useStateRef(() => getModelFromJson(XxxFormModel))`（见「getModelFromJson」用法 2）
-- 范围：仅集合类复杂类型；标量维持断言语义（复杂类型方法调用会崩，标量读到 undefined 不崩）；单值嵌套对象（`detail!: ChildModel`）暂不定策略，见待补
+- 范围：仅复杂类型；标量维持断言语义（复杂类型方法调用会崩，标量读到 undefined 不崩）
+
+**单值嵌套对象（字段类型为另一 model class，非集合）**两种写法皆可：
+
+```ts
+// 1. 类字段初始化器（推荐：每次构造重新求值，引用安全，纯 new 也生效）
+subForm: SubFormModel = getModelFromJson(SubFormModel)
+
+// 2. @Default 工厂形态（默认值元数据化，仅 fromJson / getModelFromJson 路径生效）
+@Default(() => getModelFromJson(SubFormModel))
+subForm!: SubFormModel
+```
+
+**`@Default` 装饰器（默认值元数据机制）**：
+
+- `@Default(value | factory)`：factory 形态在每次 fromJson / getModelFromJson 实例化时独立执行；**禁止立即执行写法 `@Default(getModelFromJson(X))`**——求值一次、所有实例共享同一引用
+- 优先级：`@Default` > 类字段初始化器 > 无默认值
 
 真机样本：`open-access-group.ts` 的 `children` / `equipmentList` / `equipmentIdMap`（存量未带默认值，渐进改造）。
 
@@ -152,8 +170,3 @@ const [form, setForm, resetForm] = useStateRef(() => getModelFromJson(EquipmentF
 
 - 只读详情弹窗的 model 命名 `XxxDetailModel`（如 `AlarmDetailModel`），就是普通 model class + `@FieldName`，配合 ep-comp 的 `generateDescriptionsItems` 使用——库内**没有**名为 DetailModel 的导出基类
 - 细则与生成流程见 `ep-comp:detail-dialog`
-
-## 待库作者补充
-
-- [ ] class 内方法 / getter 的推荐写法与禁忌
-- [ ] 单值嵌套对象（字段类型为另一 model class，非集合）的默认值策略
