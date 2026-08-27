@@ -32,7 +32,7 @@ const [visible, setVisible] = useToggle()
 
 ## useTablePage —— 分页表格数据链路
 
-列表页 / 查询页的分页加载默认用 `useTablePage`，与 `GxSearch` + `GxPaginationTable` 构成主链路。签名：数组解构 `[list, 控制器]`，入参为回调式 loader（真机：`system/user/index.vue`）：
+列表页 / 查询页的分页加载默认用 `useTablePage`，与 `GxSearch` + `GxPaginationTable` 构成主链路。签名：数组解构 `[list, 控制器]`，入参为回调式 loader（真机：[../examples/user-index.vue](../examples/user-index.vue)）：
 
 ```ts
 import { useTablePage } from '@gx-web/tool'
@@ -58,7 +58,25 @@ const [list, { page, loading, setLoading, loadList, reloadList, onChange }] = us
 | `useLoadMap` | 单对象加载（详情数据） | `const [detail, { load, loading, resetData }] = useLoadMap(loader)` |
 | `useFormDirtyTracker` | 编辑表单字段级脏检查 | `const { isFieldDirty, resetToInitial, updateInitial } = useFormDirtyTracker(form)`，配合「仅提交改动字段」的编辑场景 |
 
-实证样本：`apps/web/src/views/system/user/`（index.vue + components/add.vue）。
+实证样本（随插件分发，`examples/` 扁平摆放）：[../examples/user-index.vue](../examples/user-index.vue) + [../examples/user-add.vue](../examples/user-add.vue)（含 [../examples/user-model.ts](../examples/user-model.ts)）。
+
+## usePagination —— 通用分页控制
+
+`useTablePage` 内部基于 `usePagination` 实现；非表格场景需要自行控制分页时按需直接使用 `usePagination(callback, config)`。
+
+## 旧版遗弃 hooks（新代码禁止使用）
+
+| 遗弃 | 替换为 |
+| --- | --- |
+| `useState` | `useStateRef` |
+| `useList` | `useLoadList` |
+| `useMap` | `useLoadMap` |
+
+存量旧代码可渐进替换；新代码与生成代码禁止出现左列——在旧代码中看到这些 hooks 不要沿用其写法。
+
+## hooks 组合次序（表格页标准结构）
+
+查询表单 `useStateRef`（初始态 `getModelFromJson(Model, 覆盖值)`）→ 表格 `useTablePage`（loader 展开 `form.value` 拼查询条件）→ 弹窗开关 `useToggle` → 子组件 `ref<InstanceType<typeof Xxx>>`，完整结构见 [../examples/user-index.vue](../examples/user-index.vue)。
 
 ## 选用速查
 
@@ -70,8 +88,8 @@ const [list, { page, loading, setLoading, loadList, reloadList, onChange }] = us
 | 非分页列表 | `useLoadList` |
 | 单对象详情 | `useLoadMap` |
 | 表单脏检查 | `useFormDirtyTracker` |
+| 非表格场景自行分页 | `usePagination` |
 
 ## 待库作者补充
 
-- [ ] `@gx-web/tool` 其余未实证 hooks 清单（逐个一行场景说明）
-- [ ] hooks 组合的推荐次序（如同页同时用 useTablePage + useStateRef 时的结构）
+- [ ] `useCompRef` / `useExposeProxy` / `useInterval` / `useListStream` / `useResizeObserver` / `useWatermark` / `useWinResize` 七个 hooks 的适用场景（逐个一行说明即可）

@@ -56,7 +56,7 @@ GX 系组件（GxForm / GXSearch 等）的 modelValue 由组件统一处理，**
 
 ## 单组件日常用法
 
-生成任务之外的直接使用规范，真机样本：`apps/web/src/views/system/user/index.vue`（表格页）与 `components/add.vue`（新增/编辑弹窗）。
+生成任务之外的直接使用规范，真机样本（随插件分发，提炼自 xbwisdom system/user，示例间引用已闭环）：[../examples/user-index.vue](../examples/user-index.vue)（表格页）与 [../examples/user-add.vue](../examples/user-add.vue)（新增/编辑弹窗，引用 [../examples/user-model.ts](../examples/user-model.ts)）。
 
 ### GxPaginationTable
 

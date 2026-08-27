@@ -2,7 +2,7 @@
 
 覆盖 `@gx-web/core` 的 model class 手写规范。OpenAPI 批量生成 model 的场景走 `api-spec:spec-to-model`（其 FieldName 清洗规则书更细），本篇只管日常手写与修改。
 
-规范真机样本：`xbwisdom-web-monorepo/packages/biz/src/model/enterprise/equipment.ts`。
+规范真机样本（随插件分发，提炼自 xbwisdom equipment.ts）：[../examples/equipment.ts](../examples/equipment.ts)。
 
 ## model class 形态
 
@@ -106,7 +106,7 @@ subForm!: SubFormModel
 - `@Default(value | factory)`：factory 形态在每次 fromJson / getModelFromJson 实例化时独立执行；**禁止立即执行写法 `@Default(getModelFromJson(X))`**——求值一次、所有实例共享同一引用
 - 优先级：`@Default` > 类字段初始化器 > 无默认值
 
-真机样本：`open-access-group.ts` 的 `children` / `equipmentList` / `equipmentIdMap`（存量未带默认值，渐进改造）。
+真机样本：[../examples/open-access-group.ts](../examples/open-access-group.ts) 的 `children` / `equipmentList` / `equipmentIdMap`（存量未带默认值，渐进改造）。
 
 ## model 分层
 
