@@ -42,7 +42,7 @@
     {
       "name": "gx-conventions",
       "source": "./conventions",
-      "description": "gx-web 库约定型用法规范插件（core / tool / ep-comp / 团队 Vue 约定）：版本化约定载体，由 AGENTS.md 指针调用，改一处全项目升级生效"
+      "description": "gx-web 库约定型用法规范插件（core / tool / ep-comp / 团队 Vue 约定）：版本化约定载体，由 AGENTS.md 指针调用，改一处全项目升级生效；gx-init 一次性把指针段写入业务项目 AGENTS.md"
     }
   ]
 }

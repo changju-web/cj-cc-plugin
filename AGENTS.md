@@ -60,6 +60,7 @@ conventions/                   — gx-conventions 插件（gx-web 库约定型�
   skills/
     gx-conventions/           — 约定规范薄壳：定位声明 + 索引 + 红线（skill 目录须与 frontmatter name 一致，故保留前缀）
       references/             — core.md / tool.md / ep-comp.md / common.md 四篇约定（约定唯一权威源，生成 skill 不复制）
+    gx-init/                  — 一次性初始化：把 gx-conventions 指针段幂等写入业务项目 AGENTS.md（装配类，无 examples/）
 ```
 
 ## Skill 文件职责分离
