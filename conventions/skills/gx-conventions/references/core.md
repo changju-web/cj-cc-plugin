@@ -85,7 +85,7 @@ equipmentIdMap: Record<string, string> = {}
 
 - 比断言语义更强的保证：`!:` 是「相信我必有值」，初始化器是「构造时必有值」，编译器与运行时双重认可，类型不含 undefined，消费端免判空
 - `getModelFromJson` 内建默认值机制（`Object.assign(instance, defaultFieldMap, json)`）：后端有值覆盖、缺字段保默认值，`row.children.map()` 永不崩；初始化器每次实例化独立求值，`= []` 无引用共享
-- 前端初始态免手工拼装：`useStateRef(() => new XxxFormModel())` 直接可用
+- 前端初始态免手工拼装：`useStateRef(() => getModelFromJson(XxxFormModel))`（见「getModelFromJson」用法 2）
 - 范围：仅集合类复杂类型；标量维持断言语义（复杂类型方法调用会崩，标量读到 undefined 不崩）；单值嵌套对象（`detail!: ChildModel`）暂不定策略，见待补
 
 真机样本：`open-access-group.ts` 的 `children` / `equipmentList` / `equipmentIdMap`（存量未带默认值，渐进改造）。
@@ -133,14 +133,20 @@ export class EquipmentSearchModel {
 
 ## getModelFromJson
 
-- 接口数据 → class 实例一律走 `getModelFromJson(json, Model)`，保装饰器元数据与 class 方法
-- 禁止 `Object.assign(new Model(), json)` / 展开复制——丢装饰器元数据，UI 文案链路失效
+签名 `getModelFromJson(Model, 覆盖数据?)`：第一参数是 model 构造器，第二参数**可选**，为默认值覆盖（通常传接口 json，有值覆盖、缺字段保 class 默认值）。两个用法：
 
 ```ts
 import { getModelFromJson } from '@gx-web/core'
 
-const detail = getModelFromJson(res.data, EquipmentTableModel)
+// 1. 接口数据 → class 实例（反序列化）
+const detail = getModelFromJson(EquipmentTableModel, res.data)
+
+// 2. 不传第二参 = 带默认值的实例工厂（表单 / 查询初始态）
+const [form, setForm, resetForm] = useStateRef(() => getModelFromJson(EquipmentFormModel))
 ```
+
+- 禁止 `Object.assign(new Model(), json)` / 展开复制——丢装饰器元数据，UI 文案链路失效
+- 与「复杂类型默认值」配合：初始态工厂自动带上 `= []` / `= {}` 默认值，免手工拼容器
 
 ## DetailModel
 
