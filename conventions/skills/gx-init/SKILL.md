@@ -20,16 +20,29 @@ description: "One-time setup for business projects using the gx-web library. Inj
    - 文件不存在 → 创建，先写一级标题（如 `# AGENTS.md`），再追加指针段
    - 文件存在 → 检查是否已含 `gx-conventions` 字样（幂等）
      - 已含 → 输出「指针已存在，跳过」，结束
-     - 未含 → 在文件末尾追加指针段
-2. 追加内容为下方模板**原文**，不改动措辞（保持各项目一致，便于后续升级识别）
+     - 未含 → 按下方「指针段组合」组装后追加
+2. 组装不是整段照抄：正文固定，库包枚举与边界句按探测结果组装
 
-## 指针段模板
+## 指针段组合（探测后组装）
+
+**正文（固定）**：
 
 ```md
 ## gx-web 库约定
 
-使用 gx-web 库（`../gx-web-lib`，含 @gx-web/core、@gx-web/tool、@gx-web/ep-comp）相关能力时，先调用 `gx-conventions` skill 阅读对应小节约定（core / tool / ep-comp / common 四篇），严格遵循；生成任务（表格页、表单弹窗、model / api 生成等）仍按各生成 skill 流程执行。注意：@gx-web/biz、@gx-web/share 等是消费项目内私有包，不在库约定范围。
+使用 gx-web 库（含 <库包枚举>）相关能力时，先调用 `gx-conventions` skill 阅读对应小节约定，严格遵循；生成任务（表格页、表单弹窗、model / api 生成等）仍按各生成 skill 流程执行。
 ```
+
+**组装规则**：
+
+- **库包枚举**：列探测到的库包（`@gx-web/core` / `@gx-web/tool` / `@gx-web/ep-comp` 与依赖清单的交集），如 `@gx-web/core、@gx-web/ep-comp`
+- **私有包边界句**：仅当依赖清单中出现库包之外的 `@gx-web/*`（如 biz / share）时，在正文后附加一行，写**实际命中的包名**（不写"等"猜测）：
+
+```md
+注意：@gx-web/biz、@gx-web/share 是本项目内私有包，不在库约定范围。
+```
+
+- 无私有包的项目不附加任何边界句；篇目（core / tool / ep-comp / common）由 gx-conventions 自身索引承载，指针里不再枚举
 
 ## 边界与收尾
 

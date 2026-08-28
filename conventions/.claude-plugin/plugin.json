@@ -1,7 +1,7 @@
 {
   "name": "gx-conventions",
   "description": "gx-web 库约定型用法规范（core / tool / ep-comp），版本化约定载体，由 AGENTS.md 指针调用",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "repository": "https://github.com/changju-web/cj-cc-marketplace",
   "author": {
     "name": "wangjiahui",

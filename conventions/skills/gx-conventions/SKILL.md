@@ -40,7 +40,7 @@ description: "gx-web library usage conventions (convention-type knowledge, not a
 
 ## 与其他载体的边界
 
-- **范围边界**：gx-web 库 = `../gx-web-lib`（@gx-web/core、@gx-web/tool、@gx-web/ep-comp + 配置类包）；消费项目内 `@gx-web/biz`、`@gx-web/share` 等私有包不属于本库，其用法约定归项目个性（ui-codegen.md）
+- **范围边界**：gx-web 库含 @gx-web/core、@gx-web/tool、@gx-web/ep-comp 及配置类包；库源码仓库通常与消费项目同级摆放（如 `../gx-web-lib`，机器布局，探测项目根同级目录定位），需要读源码分析时按此探测；消费项目内 `@gx-web/biz`、`@gx-web/share` 等私有包不属于本库，其用法约定归项目个性（ui-codegen.md）
 - **项目个性约定**（如各项目的字典组件封装、全局注册表、校验命令）在消费项目 `docs/ui-codegen.md`，不在本 skill
 - **约定唯一归属**：本 skill 是库级约定唯一权威源，生成 skill 的 reference 只保留链路必需部分，不复制本文约定
 - 约定更新 = 市场修改 + bump 版本 + 消费端升级插件，不向消费项目落副本
