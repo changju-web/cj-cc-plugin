@@ -9,8 +9,8 @@ description: "Generate or incrementally add @gx-web/ep-comp read-only detail dia
 
 这个 skill 只负责：
 
-- `DetailModel`
-- `loadDetail`
+- `DetailModel`（落位跟随归属决策，见下）
+- `loadDetail`（统一管理形态走 biz 工厂方法，就近形态落 `../api`）
 - `components/detail.vue`
 - 向现有 `index.vue` 注入详情按钮、详情 handler、详情组件实例
 
@@ -19,6 +19,14 @@ description: "Generate or incrementally add @gx-web/ep-comp read-only detail dia
 - 表单提交
 - 查询条件改造
 - 改写 `GxPaginationTable` 主结构
+
+## API/Model 归属决策
+
+DetailModel 与 loadDetail 的落位是项目级架构决策，skill 不写死，判定顺序：
+
+1. **项目约定优先**：`docs/ui-codegen.md` 已声明归属（如「biz 统一管理」）→ 按约定执行。
+2. **跟随宿主列表页现状**：列表页 model/API 已有明确落位 → 详情的 DetailModel / API 跟随同一落位。**改造存量模块时**例外：项目约定中的统一管理层声明优先于存量就近形态，就近 class API / model 属迁移前历史形态，改造时收敛到统一层。
+3. **无法判断** → AskUserQuestion 请用户选择（统一管理 / 就近原则）。
 
 ## Modes
 
@@ -65,8 +73,9 @@ description: "Generate or incrementally add @gx-web/ep-comp read-only detail dia
 
 一次成功输出至少应满足：
 
+- 归属决策已完成，DetailModel 与 loadDetail 落位符合决策结论
 - 生成 `DetailModel`
-- 生成 `loadDetail`
+- 生成详情查询（`loadDetail` 或 biz 工厂 `byId`）
 - 详情组件暴露 `init(id)`
 - 自动模式与原生模式边界清晰
 - 复杂场景切原生模式前明确需要用户确认

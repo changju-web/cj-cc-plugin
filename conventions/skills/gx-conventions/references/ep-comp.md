@@ -7,11 +7,12 @@
 三层 schema（`generateFormItems` / `generateTableColumns` / `generateDescriptionsItems`）表达需求时，严格沿优先链取第一个可用手段：
 
 ```text
-内置 type → 注册后 type（ComponentMap）→ 动态 props / hide → render: h() 兜底 → 原生模式
+内置 type → 注册后 type（ComponentMap）→ 动态 props / hide / col → 插槽（#form-item-*）→ render: h() 兜底 → 原生模式
 ```
 
-- 下结论"schema 表达不了"之前，必须先查完优先链前两级
-- `render: h()` 是兜底而非默认；原生模式（手写 ElForm 等）需列出原因并经用户确认
+- 下结论"schema 表达不了"之前，必须先查完 render 之前的全部层级
+- 插槽层管未注册进 ComponentMap 的常规组件：**单个 v-model、不需要组件 ref** 的（如 ElInputNumber）走 `#form-item-*` 插槽而非 render——插槽写法更短、模板自动导入省显式 import（实证：ElInputNumber 走 render 需要手动 import + h 挂接，插槽版三行完事）
+- `render: h()` 只兜底插槽也表达不了的场景（程序化渲染、复杂联动）；原生模式（手写 ElForm 等）需列出原因并经用户确认
 
 ## ComponentMap 扩充（app 侧注入）
 
@@ -19,16 +20,16 @@
 
 ```ts
 // src/config/ep-comp.ts
-import { compMap } from '@gx-web/ep-comp'
+import { compMap } from "@gx-web/ep-comp";
 
-declare module '@gx-web/ep-comp' {
+declare module "@gx-web/ep-comp" {
   interface ComponentMap {
-    'dict-select': typeof DictSelect
-    'test-app-select': typeof TestAppSelect
+    "dict-select": typeof DictSelect;
+    "test-app-select": typeof TestAppSelect;
   }
 }
 
-compMap.registerComponents({ 'dict-select': DictSelect })
+compMap.registerComponents({ "dict-select": DictSelect });
 ```
 
 注册后 schema 直接用：
@@ -46,11 +47,11 @@ GX 系组件（GxForm / GXSearch 等）的 modelValue 由组件统一处理，**
 
 ## 插槽使用边界
 
-| 插槽 | 使用边界 |
-| --- | --- |
-| `#header` / `#action-bar` / `#action` | 正常注入使用：表头搜索区、表格工具条、行操作列 |
-| `#table-column-*` | 样式特殊处理、回显处理（如按行数据映射展示文案） |
-| `#form-item-*` | **type 注入不能解决时才用**：type 绑定的是单字段，复杂组件涉及多字段绑定或需要组件 ref 时走插槽注入 |
+| 插槽                                  | 使用边界                                                                                                                                                         |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#header` / `#action-bar` / `#action` | 正常注入使用：表头搜索区、表格工具条、行操作列                                                                                                                   |
+| `#table-column-*`                     | 样式特殊处理、回显处理（如按行数据映射展示文案）                                                                                                                 |
+| `#form-item-*`                        | **先于 render**：type / 注册 type 解决不了时一律走插槽注入——未注册常规组件的单字段 v-model、多字段绑定、需要组件 ref 都算；仅插槽也表达不了才 `render: h()` 兜底 |
 
 **插槽名必须 kebab-case（横线分隔）**：字段名 `parkId` 的表单项插槽是 `#form-item-park-id`，写 `#form-item-parkId` **无效**——camelCase 字段名转插槽名时逐词横线分隔（实证：`createUser` → `#table-column-create-user`）。
 
@@ -77,13 +78,19 @@ GX 系组件（GxForm / GXSearch 等）的 modelValue 由组件统一处理，**
 ```
 
 - `page` / `onChange` / `loading` / `list` 来自 `useTablePage`（见 tool.md）；`table-props` 透传表格配置（勾选列、操作列宽）
+- **操作列默认渲染**（GxTable `action: true`）：无行操作的列表必须显式 `table-props: { action: false }` 隐藏，避免空「操作」列占位
 - 四大插槽：`#header`（放 GxSearch）、`#action-bar`、`#table-column-*`、`#action`
 
 ### GxSearch（查询区）
 
 ```vue
 <template>
-  <GxSearch v-model="form" :items="searchItems" @submit="loadList" @reset="handleReset" />
+  <GxSearch
+    v-model="form"
+    :items="searchItems"
+    @submit="loadList"
+    @reset="handleReset"
+  />
 </template>
 ```
 
@@ -91,7 +98,12 @@ GX 系组件（GxForm / GXSearch 等）的 modelValue 由组件统一处理，**
 
 ```vue
 <template>
-  <GxDialog v-model="visible" :title="dialogTitle" width="700px" @closed="close">
+  <GxDialog
+    v-model="visible"
+    :title="dialogTitle"
+    width="700px"
+    @closed="close"
+  >
     <GxForm
       ref="FormRef"
       v-model="form"
@@ -113,8 +125,9 @@ GX 系组件（GxForm / GXSearch 等）的 modelValue 由组件统一处理，**
 
 - `visible` 由弹窗组件内部 `useToggle` 管理，**不由父组件传入**；`@closed` 里 resetForm
 - `defineExpose({ init, initEdit })`——父组件 `xxxRef.value?.init()` 新增 / `initEdit(row)` 编辑；标题 computed 拼接「新增 / 编辑 + 实体名」
+- 模板 Ref 一律 `const xxxRef = useTemplateRef('xxxRef')`（Vue 3.5+：key 与模板 `ref` 属性严格同名、vue-tsc 自动推断实例类型、返回只读 Ref）；不用裸 `ref<InstanceType<typeof Xxx>>()`；v-for 多实例 Ref 用 `useTemplateRefsList`
 - 提交成功后 `emit('submitted')`，父组件收到后刷新列表
-- `rules` 用 element-plus `FormRules`；`formItems` 的 `col: { span }` 控布局、`hide: () => xxx` 响应式显隐、`props` 传响应式值自动联动（如 `disabled: isEdit`）
+- `rules` 用 element-plus `FormRules`；`formItems` 的 `col: { span }` 控布局、`col: (form) => ({ span })` 函数式动态布局（同 hide 接收表单值，用于隐藏项后的通栏补位，避免两列配对前移错位）、`hide: () => xxx` 响应式显隐、`props` 传响应式值自动联动（如 `disabled: isEdit`）
 
 ## 生成任务路由
 

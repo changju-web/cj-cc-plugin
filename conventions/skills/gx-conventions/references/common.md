@@ -8,38 +8,53 @@
 
 ```ts
 interface Props {
-  msg?: string
-  labels?: string[]
+  msg?: string;
+  labels?: string[];
 }
 
-const { msg = 'hello', labels = ['one', 'two'] } = defineProps<Props>()
+const { msg = "hello", labels = ["one", "two"] } = defineProps<Props>();
 ```
 
 考虑封装便捷时可用备选：
 
 ```ts
 const props = withDefaults(defineProps<Props>(), {
-  msg: 'hello',
-  labels: () => ['one', 'two']
-})
+  msg: "hello",
+  labels: () => ["one", "two"],
+});
 ```
 
 ## Emits 类型标注
 
 ```ts
 const emit = defineEmits<{
-  change: [id: number]
-  update: [value: string]
-}>()
+  change: [id: number];
+  update: [value: string];
+}>();
 ```
+
+## 双向绑定一律 defineModel（Vue 3.4+）
+
+组件的 `modelValue` 双向绑定**禁止** `props.modelValue + emit('update:modelValue')` 手写三件套（含 computed get/set 代理版）：
+
+```ts
+// ✅ 直接 defineModel
+const visible = defineModel<boolean>({ required: true });
+const value = defineModel<string>();
+
+// ❌ props.modelValue + defineEmits(['update:modelValue']) + computed get/set 转发
+```
+
+- 需要在写回前做加工的（如 UrlPermGroup 拼 `METHOD:/path`），对 `defineModel` 返回的 ref 赋值即可，不必退回 emit
+- 仅当绑定名不是 `modelValue`（如 `v-model:title`）时用 `defineModel<string>('title')`
 
 ## 插槽类型标注
 
 ```vue
 <script setup lang="ts">
 const slots = defineSlots<{
-  default?: (scope: { msg: string }) => any
-}>()
+  default?: (scope: { msg: string }) => any;
+}>();
 </script>
 ```
 
@@ -54,14 +69,14 @@ const slots = defineSlots<{
 
 ```ts
 // store/modules/setting.ts
-export const useSettingStore = defineStore('setting', () => {
+export const useSettingStore = defineStore("setting", () => {
   // ...
-  return {}
-})
+  return {};
+});
 
 // 非组件场景统一使用的安全入口
 export function useSettingStoreHook() {
-  return useSettingStore(store)
+  return useSettingStore(store);
 }
 ```
 

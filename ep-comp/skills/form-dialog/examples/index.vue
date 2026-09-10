@@ -5,7 +5,7 @@ import { useStateRef, useTablePage } from '@gx-web/tool'
 import { getModelFromJson } from '@gx-web/core'
 import { GxPaginationTable, GxSearch, generateFormItems, generateTableColumns } from '@gx-web/ep-comp'
 import { AlarmQueryModel, AlarmListItemModel } from './model'
-import { loadPage } from './api'
+import { AlarmApi } from '@/api/<域>/alarm'
 import AlarmAdd from './components/alarm-add.vue'
 import AlarmAudit from './components/alarm-audit.vue'
 
@@ -19,7 +19,7 @@ const [search, , resetSearch] = useStateRef(() => getModelFromJson(AlarmQueryMod
 
 const [list, { page, loading, loadList, reloadList, onChange }] = useTablePage<AlarmListItemModel>(
   ({ current, size }) =>
-    loadPage({ ...search.value, pageNum: current, pageSize: size }).then(res => ({
+    AlarmApi.page({ ...search.value, pageNum: current, pageSize: size }).then(res => ({
       records: res.data.records,
       total: res.data.total
     }))

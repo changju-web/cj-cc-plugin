@@ -12,7 +12,9 @@
 
 ## 自动模式组件模板
 
-标准字段直接用字符串简写，`GxForm` 内置取消/确认按钮，通过 `@cancel` / `@submit` 处理：
+标准字段直接用字符串简写，`GxForm` 内置取消/确认按钮，通过 `@cancel` / `@submit` 处理。
+
+API/model 的 import 跟随归属决策：统一管理形态消费 app 侧 `XxxApi`（FormModel 来自统一层）；就近形态 `../api` + `../model`（下例注释给出两种形态）：
 
 ```vue
 <script setup lang="ts">
@@ -22,9 +24,9 @@ import { ElMessage } from 'element-plus'
 import { useStateRef, useToggle } from '@gx-web/tool'
 import { getModelFromJson } from '@gx-web/core'
 import { generateFormItems, GxDialog, GxForm } from '@gx-web/ep-comp'
-import { add, update } from '../api'
-import type { AlarmListItemModel } from '../model'
-import { AlarmFormModel } from '../model'
+import { AlarmApi } from '@/api/<域>/alarm' // 统一管理形态；就近形态: import { add, update } from '../api'
+import type { AlarmListItemModel } from '../model' // 统一管理形态行模型来自 '@gx-web/biz'
+import { AlarmFormModel } from '../model' // 统一管理形态: import { AlarmFormModel } from '@gx-web/biz'
 
 const emit = defineEmits<{ submitted: [] }>()
 const [visible, setVisible] = useToggle(false)
@@ -41,7 +43,7 @@ const handleSubmit = async () => {
   try {
     setLoading(true)
     await FormRef.value?.validate()
-    isEdit.value ? await update(form.value) : await add(form.value)
+    isEdit.value ? await AlarmApi.update(form.value) : await AlarmApi.add(form.value)
     ElMessage.success('操作成功')
     setVisible(false)
     emit('submitted')
@@ -141,8 +143,8 @@ import { ElButton, ElForm, ElFormItem, ElInput, ElMessage, ElRadio, ElRadioGroup
 import { useStateRef, useToggle } from '@gx-web/tool'
 import { getModelFromJson } from '@gx-web/core'
 import { GxDialog } from '@gx-web/ep-comp'
-import { audit } from '../api'
-import { AlarmAuditModel } from '../model'
+import { AlarmApi } from '@/api/<域>/alarm' // 统一管理形态；就近形态: import { audit } from '../api'
+import { AlarmAuditModel } from '../model' // 统一管理形态: import { AlarmAuditModel } from '@gx-web/biz'
 
 const emit = defineEmits<{ submitted: [] }>()
 const [visible, setVisible] = useToggle(false)

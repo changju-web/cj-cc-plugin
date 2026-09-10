@@ -7,10 +7,10 @@ description: "Generate @gx-web/ep-comp list/table/pagination page skeletons from
 
 ## Overview
 
-这个 skill 只生成表格页底座：
+这个 skill 生成表格页底座，model 与 API 的落位由「API/Model 归属决策」决定：
 
-- `model/index.ts`：`XxxQueryModel`、`XxxListItemModel`
-- `api/index.ts`：`loadPage`
+- `XxxQueryModel`、`XxxListItemModel`（统一管理形态：契约实体落 biz，页面 model 继承补字段；就近形态：落 `model/index.ts`）
+- 分页查询 API（统一管理形态：biz 工厂方法 + app 侧消费文件；就近形态：`api/index.ts` 的 `loadPage`）
 - `index.vue`：`GxSearch`、`GxPaginationTable`、`#header`、`#action`、`#action-bar`
 
 这个 skill 不负责：
@@ -43,7 +43,7 @@ description: "Generate @gx-web/ep-comp list/table/pagination page skeletons from
 
 ## Output Scope
 
-固定输出三部分：
+按归属决策结论输出三部分：
 
 1. `Model`
 2. `API`
@@ -54,13 +54,13 @@ description: "Generate @gx-web/ep-comp list/table/pagination page skeletons from
 至少生成：
 
 - `XxxQueryModel`
-- `XxxListItemModel`
+- `XxxListItemModel`（或统一管理形态下的 biz 实体 + 页面行模型继承）
 
 ### API
 
 至少生成：
 
-- `loadPage`
+- 分页查询（`loadPage` 或 biz 工厂的 `page` 方法）
 
 ### 主页面集成
 
@@ -70,6 +70,18 @@ description: "Generate @gx-web/ep-comp list/table/pagination page skeletons from
 - 行级操作槽：`#action`
 - 页面级操作槽：`#action-bar`
 - 根节点 `<div class="模块名-kebab-case">`
+
+## API/Model 归属决策
+
+model 与 API 的落位是项目级架构决策，skill 不写死。生成前按以下顺序确定：
+
+1. **项目约定优先**：读 `docs/ui-codegen.md`（或项目同类约定文件），已有归属声明（如「biz 统一管理」）→ 直接按约定执行。
+2. **探测项目结构**（无约定文件时）：
+   - **统一管理形态**：workspace 存在统一 api/model 层（如 `@gx-web/biz`：`src/model/<域>/` 装饰器实体 + `src/api/<域>/` 的 `createXxxApi(request)` 工厂、app 侧仅一行消费），且存量页面从统一层 import → 契约实体与 API 工厂落统一层，页面 model 继承实体只补页面字段；
+   - **就近形态**：存量页面把 model/api 放 `views/<module>/model`、`views/<module>/api` → 跟随就近形态；
+   - 两种迹象并存或都无法确认 → AskUserQuestion 请用户选择（统一管理 / 就近原则），确认后再生成。
+   - **改造存量模块时**：项目约定中的统一管理层声明优先于存量就近形态——存量 class 静态方法 API、就近 model 属迁移前历史形态，不是惯例依据；改造即把 api/model 收敛到统一层、引用点一并切换，不新增就近文件。
+3. **请求实例不虚构**：统一管理形态由 app 层把项目请求实例注入工厂（`ApiRequest` 参数）；就近形态直接用项目请求层。以项目实际请求封装为准，禁止套用模板占位写法。
 
 ## Shared Contracts
 
@@ -114,8 +126,9 @@ description: "Generate @gx-web/ep-comp list/table/pagination page skeletons from
 
 一次成功输出至少应满足：
 
-- 正确生成 `XxxQueryModel` 和 `XxxListItemModel`
-- API 只有 `loadPage`
+- 归属决策已完成且结论明确（约定 / 探测 / 用户确认三选一有据）
+- 正确生成 `XxxQueryModel` 和 `XxxListItemModel`（落位符合归属决策）
+- API 只有分页查询（落位符合归属决策）
 - `index.vue` 使用 `GxSearch`、`GxPaginationTable`、`useTablePage`
 - 模板只有一个根节点 `<div class="模块名-kebab-case">`
 - 保留稳定挂点，便于 `form-dialog` / `detail-dialog` 继续注入

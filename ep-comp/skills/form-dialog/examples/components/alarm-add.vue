@@ -5,9 +5,9 @@ import { ElMessage } from 'element-plus'
 import { useStateRef, useToggle } from '@gx-web/tool'
 import { getModelFromJson } from '@gx-web/core'
 import { generateFormItems, GxDialog, GxForm } from '@gx-web/ep-comp'
-import { add, update } from '../api'
+import { AlarmApi } from '@/api/<域>/alarm'
 import type { AlarmListItemModel } from '../model'
-import { AlarmFormModel } from '../model'
+import { AlarmFormModel } from '@gx-web/biz'
 
 defineOptions({
   name: 'AlarmAdd'
@@ -50,7 +50,7 @@ const handleSubmit = async () => {
   try {
     setLoading(true)
     await FormRef.value?.validate()
-    const { message } = await (isEdit.value ? update(form.value) : add(form.value))
+    const { message } = await (isEdit.value ? AlarmApi.update(form.value) : AlarmApi.add(form.value))
     ElMessage.success(message)
     setVisible(false)
     emit('submitted')

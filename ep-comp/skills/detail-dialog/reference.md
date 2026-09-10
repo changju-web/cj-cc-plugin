@@ -29,14 +29,14 @@ export class AlarmDetailModel {
 import { ref } from 'vue'
 import { useLoadMap, useToggle } from '@gx-web/tool'
 import { generateDescriptionsItems, GxDescriptions, GxDialog } from '@gx-web/ep-comp'
-import { loadDetail } from '../api'
-import { AlarmDetailModel } from '../model'
+import { AlarmApi } from '@/api/<域>/alarm' // 统一管理形态；就近形态: import { loadDetail } from '../api'
+import { AlarmDetailModel } from '../model' // 统一管理形态: import { AlarmDetailModel } from '@gx-web/biz'
 
 const [visible, setVisible] = useToggle(false)
 const currentId = ref('')
 
 const [detail, { load, loading, resetData }] = useLoadMap<AlarmDetailModel>(
-  () => loadDetail(currentId.value).then(res => res.data)
+  () => AlarmApi.byId(currentId.value).then(res => res.data)
 )
 
 const items = generateDescriptionsItems(AlarmDetailModel, [
@@ -119,7 +119,7 @@ import { ref } from 'vue'
 import { ElDescriptions, ElDescriptionsItem } from 'element-plus'
 import { useToggle } from '@gx-web/tool'
 import { GxDialog } from '@gx-web/ep-comp'
-import { loadDetail } from '../api'
+import { AlarmApi } from '@/api/<域>/alarm' // 统一管理形态；就近形态: import { loadDetail } from '../api'
 import type { AlarmDetailModel } from '../model'
 
 const [visible, setVisible] = useToggle(false)
@@ -130,7 +130,7 @@ const init = async (id: string) => {
   setVisible(true)
   setLoading(true)
   try {
-    const { data } = await loadDetail(id)
+    const { data } = await AlarmApi.byId(id)
     detail.value = data
   }
   finally {

@@ -16,7 +16,9 @@ const [form, setForm, resetForm] = useStateRef(() => ({
 ```
 
 - 禁止 `ref({ ... })` / `reactive({ ... })` + 手写重置函数来模拟同一能力
+- **页面状态变量一律 useStateRef 声明**（对象、数组皆可）：数组 setter 是整体替换语义（isObject 判定排除数组，不走 Object.assign）；仅组件模板引用（`ref<InstanceType<typeof X>>()`）保留裸 ref
 - 初始值工厂传入，保证 reset 回到确定形态
+- **解构出的 setter 必须用满，禁止手动 `.value =` 赋值**：改字段走 `setForm({ field: value })`（Object.assign 合并 patch），弹窗开关走 `setVisible(true/false)`，加载态走 `setLoading(true/false)`；局部读值（模板、computed get、表达式）不受限
 
 ## useToggle —— 布尔开关
 
@@ -27,6 +29,8 @@ import { useToggle } from '@gx-web/tool'
 
 const [visible, setVisible] = useToggle()
 ```
+
+- 需要写值时必须解构出 setter（`const [loading, setLoading] = useToggle(false)`），后续统一 `setLoading(true/false)`，不要退回 `loading.value = true`
 
 - 禁止 `ref(false)` + 手写 `xxx.value = !xxx.value`
 

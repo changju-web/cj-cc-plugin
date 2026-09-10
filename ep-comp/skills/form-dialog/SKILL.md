@@ -11,8 +11,8 @@ description: "Generate or incrementally add @gx-web/ep-comp form dialogs to a ta
 
 负责内容：
 
-- 追加 `FormModel` / `AuditModel`
-- 追加 API：如 `add`、`update`、`audit`
+- 追加 `FormModel` / `AuditModel`（落位跟随归属决策，见下）
+- 追加 API：如 `add`、`update`、`audit`（统一管理形态走 biz 工厂方法，就近形态落 `../api`）
 - 生成 `components/*.vue`
 - 向已有 `index.vue` 注入 import、ref、handler、按钮、组件实例
 
@@ -21,6 +21,16 @@ description: "Generate or incrementally add @gx-web/ep-comp form dialogs to a ta
 - 重写整个 `table-page` 骨架
 - 改写 `GxPaginationTable` 主结构
 - 擅自重排 `columns` / `searchItems`
+
+## API/Model 归属决策
+
+FormModel / AuditModel 与 API 的落位是项目级架构决策，skill 不写死，判定顺序：
+
+1. **项目约定优先**：`docs/ui-codegen.md` 已声明归属（如「biz 统一管理」）→ 按约定执行。
+2. **跟随宿主列表页现状**：列表页的 model/API 已有明确落位（统一层 import 或就近 `../model`、`../api`）→ 新增的 FormModel / API 跟随同一落位，不另起炉灶。**改造存量模块时**例外：项目约定中的统一管理层声明优先于存量就近形态，就近 class API / model 属迁移前历史形态，改造时收敛到统一层。
+3. **无法判断** → AskUserQuestion 请用户选择（统一管理 / 就近原则）。
+
+统一管理形态下：纯契约字段的 FormModel / AuditModel 落 biz model；API 直接用 biz 工厂已有方法（`XxxApi.add` / `XxxApi.update`），工厂缺方法时先补工厂再消费。
 
 ## Project Conventions（docs/ui-codegen.md，每次运行最先读）
 

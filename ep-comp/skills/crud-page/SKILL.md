@@ -40,11 +40,12 @@ description: "Compatibility/orchestration entry for @gx-web/ep-comp complete CRU
 2. 判断目标是否属于 `@gx-web/ep-comp` 体系；如果无法判断，先询问技术栈或组件体系。
 3. 根据“路由规则”选择目标 skill。
 4. 读取目标 skill 的 `SKILL.md`，并按目标 skill 要求读取其 `reference.md`。
-5. 按目标 skill 的输出约束生成或修改代码。
-6. 如果执行链路包含多个 skill，必须按顺序执行：
+5. 先完成目标 skill 的「API/Model 归属决策」（项目约定 / 探测 / 用户确认），再生成代码。
+6. 按目标 skill 的输出约束生成或修改代码。
+7. 如果执行链路包含多个 skill，必须按顺序执行：
    - 先生成或确认 `table-page` 的稳定挂点
    - 再执行 `form-dialog` / `detail-dialog` 的增量注入
-7. 输出中说明当前使用的链路，例如：
+8. 输出中说明当前使用的链路，例如：
 
 ```text
 执行链路：table-page -> form-dialog

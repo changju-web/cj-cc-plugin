@@ -1,35 +1,42 @@
-import useAxios from '@base-lib/hooks/core/useAxios'
-import type { AlarmAuditModel, AlarmFormModel, AlarmListItemModel, AlarmQueryModel } from '../model'
+// 统一管理形态：契约 API 落统一层（packages/biz/src/api/<域>/alarm.ts），
+// app 侧只留一行消费文件（apps/<app>/src/api/<域>/alarm.ts）：
+//   import { createAlarmApi } from '@gx-web/biz'
+//   import request from '@/plugins/axios'
+//   export const AlarmApi = createAlarmApi(request)
+import type { ApiRequest, Res, ResPage } from '../../../types'
+import type { AlarmAuditModel, AlarmEntity, AlarmFormModel, AlarmQueryModel } from '../../model'
 
-const request = useAxios()
+/** 告警记录 */
+export const createAlarmApi = (request: ApiRequest) => ({
+  /** 获取分页 */
+  page: (params: AlarmQueryModel & { pageNum: number; pageSize: number }) =>
+    request<ResPage<AlarmEntity>>({
+      method: 'get',
+      url: `/zl-business/alarm/record/page`,
+      params
+    }),
 
-export const loadPage = (params: AlarmQueryModel) => {
-  return request.get<ResPage<AlarmListItemModel>>({
-    url: `/zl-business/alarm/record/page`,
-    params: {
-      ...params,
-      pageOrder: 'create_time desc'
-    }
-  })
-}
+  /** 新增 */
+  add: (data: AlarmFormModel) =>
+    request<Res<AlarmEntity>>({
+      method: 'post',
+      url: `/zl-business/alarm/record`,
+      data
+    }),
 
-export const add = (data: AlarmFormModel) => {
-  return request.post({
-    url: `/zl-business/alarm/record`,
-    data
-  })
-}
+  /** 编辑 */
+  update: (data: AlarmFormModel) =>
+    request<Res<AlarmEntity>>({
+      method: 'put',
+      url: `/zl-business/alarm/record`,
+      data
+    }),
 
-export const update = (data: AlarmFormModel) => {
-  return request.put({
-    url: `/zl-business/alarm/record`,
-    data
-  })
-}
-
-export const audit = (data: AlarmAuditModel) => {
-  return request.put({
-    url: `/zl-business/alarm/record/audit`,
-    data
-  })
-}
+  /** 审核 */
+  audit: (data: AlarmAuditModel) =>
+    request<Res<unknown>>({
+      method: 'put',
+      url: `/zl-business/alarm/record/audit`,
+      data
+    })
+})

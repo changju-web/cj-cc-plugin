@@ -1,20 +1,25 @@
-import useAxios from '@base-lib/hooks/core/useAxios'
-import type { AlarmDetailModel, AlarmListItemModel, AlarmQueryModel } from '../model'
+// 统一管理形态：契约 API 落统一层（packages/biz/src/api/<域>/alarm.ts），
+// app 侧只留一行消费文件（apps/<app>/src/api/<域>/alarm.ts）：
+//   import { createAlarmApi } from '@gx-web/biz'
+//   import request from '@/plugins/axios'
+//   export const AlarmApi = createAlarmApi(request)
+import type { ApiRequest, Res, ResPage } from '../../../types'
+import type { AlarmDetailModel, AlarmEntity, AlarmQueryModel } from '../../model'
 
-const request = useAxios()
+/** 告警记录 */
+export const createAlarmApi = (request: ApiRequest) => ({
+  /** 获取分页 */
+  page: (params: AlarmQueryModel & { pageNum: number; pageSize: number }) =>
+    request<ResPage<AlarmEntity>>({
+      method: 'get',
+      url: `/zl-business/alarm/record/page`,
+      params
+    }),
 
-export const loadPage = (params: AlarmQueryModel) => {
-  return request.get<ResPage<AlarmListItemModel>>({
-    url: `/zl-business/alarm/record/page`,
-    params: {
-      ...params,
-      pageOrder: 'create_time desc'
-    }
-  })
-}
-
-export const loadDetail = (id: string) => {
-  return request.get<Res<AlarmDetailModel>>({
-    url: `/zl-business/alarm/record/${id}`
-  })
-}
+  /** 根据 id 查看详情 */
+  byId: (id: string) =>
+    request<Res<AlarmDetailModel>>({
+      method: 'get',
+      url: `/zl-business/alarm/record/${id}`
+    })
+})

@@ -2,7 +2,7 @@
 import { h, ref } from 'vue'
 import { useLoadMap, useToggle } from '@gx-web/tool'
 import { generateDescriptionsItems, GxDescriptions, GxDialog } from '@gx-web/ep-comp'
-import { loadDetail } from '../api'
+import { AlarmApi } from '@/api/<域>/alarm'
 import { AlarmDetailModel } from '../model'
 
 defineOptions({
@@ -19,7 +19,7 @@ const [visible, setVisible] = useToggle(false)
 const currentId = ref('')
 
 const [detail, { load, loading, resetData }] = useLoadMap<AlarmDetailModel>(
-  () => loadDetail(currentId.value).then(res => res.data)
+  () => AlarmApi.byId(currentId.value).then(res => res.data)
 )
 
 const items = generateDescriptionsItems(AlarmDetailModel, [

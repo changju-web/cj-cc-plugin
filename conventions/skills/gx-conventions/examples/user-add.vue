@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, useTemplateRef } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { getModelFromJson } from '@gx-web/core'
 import { useFormDirtyTracker, useLoadList, useLoadMap, useStateRef, useToggle } from '@gx-web/tool'
 import { GxDialog, GxForm, generateFormItems } from '@gx-web/ep-comp'
@@ -75,20 +75,7 @@ const formItems = generateFormItems(UserFormModel, [
     col,
     type: 'system-role-select'
   },
-  {
-    prop: 'userDepts',
-    col,
-    render: () =>
-      h(SystemDeptTreeSelectMultiple, {
-        modelValue: form.value.userDepts,
-        'onUpdate:modelValue': (val: string[]) => {
-          form.value.userDepts = val
-        },
-        showRoot: false,
-        multiple: true,
-        style: 'width: 100%'
-      })
-  },
+  { prop: 'userDepts', col },
   { prop: 'nickname', col },
   { prop: 'realName', col },
   { prop: 'userType', col, type: 'dict-select', props: { dictCode: 'user-type' } },
@@ -199,7 +186,17 @@ defineExpose({
       @cancel="setVisible(false)"
       @reset="handleReset"
       @submit="handleSubmit"
-    />
+    >
+      <!-- 未注册组件的常规绑定走插槽而非 render（声明式优先链） -->
+      <template #form-item-user-depts>
+        <SystemDeptTreeSelectMultiple
+          v-model="form.userDepts"
+          multiple
+          :show-root="false"
+          class="w-full"
+        />
+      </template>
+    </GxForm>
   </GxDialog>
 </template>
 
